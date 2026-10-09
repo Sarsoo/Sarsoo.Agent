@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <AssemblyName>sai</AssemblyName>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PublishAot>true</PublishAot>
+        <PublishSelfContained>true</PublishSelfContained>
+        <PublishTrimmed>true</PublishTrimmed>
+        <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+        <IsTrimmable>true</IsTrimmable>
+        <EnableAotAnalyzer>true</EnableAotAnalyzer>
+        <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+        <OptimizationPreference>Speed</OptimizationPreference>
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Agents.AI.Harness" Version="1.24.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
+      <PackageReference Include="NLog" Version="6.2.1" />
+      <PackageReference Include="NLog.Extensions.Logging" Version="6.2.1" />
+      <PackageReference Include="System.CommandLine" Version="2.0.12" />
+      <PackageReference Include="Terminal.Gui" Version="2.5.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Sarsoo.Agent\Sarsoo.Agent.csproj" />
+    </ItemGroup>
+    
+</Project>
