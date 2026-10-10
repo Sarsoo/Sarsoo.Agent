@@ -15,6 +15,7 @@ public class MessageView: View
     private readonly ILogger<MessageView> _logger;
     private List<BaseMessage> _messages = new();
     private Dictionary<string, List<AgentMessage>> _messageIndex = new();
+    private bool _scrollToBottomPending;
     
     public MessageView(ILogger<MessageView> logger)
     {
@@ -43,8 +44,41 @@ public class MessageView: View
         AddCommand (Command.ScrollDown, () => { ScrollVertical (1); return true; });
         AddCommand (Command.PageUp, () => { ScrollVertical (-GetContainerSize().Height); return true; });
         AddCommand (Command.PageDown, () => { ScrollVertical (GetContainerSize().Height); return true; });
-        AddCommand (Command.Home, () => { ScrollVertical (-Int32.MaxValue); return true; });
-        AddCommand (Command.End, () => { ScrollVertical (Int32.MaxValue); return true; });
+        AddCommand (Command.Home, () => { Viewport = Viewport with { Y = 0 }; return true; });
+        AddCommand (Command.End, () => { ScrollToBottom (); return true; });
+    }
+
+    /// <summary>
+    ///     Requests that the viewport scroll to the bottom of the message view once the next layout
+    ///     pass has applied the new content size. Safe to call from any thread.
+    /// </summary>
+    public void RequestScrollToBottom ()
+    {
+        App?.Invoke (() =>
+        {
+            _scrollToBottomPending = true;
+            SetNeedsLayout ();
+        });
+    }
+
+    private void ScrollToBottom () => Viewport = Viewport with { Y = Math.Max (0, GetContentHeight () - Viewport.Height) };
+
+    private void UpdateContentSize ()
+    {
+        if (SubViews.Count == 0)
+        {
+            return;
+        }
+
+        // A base View tracks the Viewport size, so the content area never exceeds
+        // what is visible and scrolling is disabled. Size the content to the
+        // SubViews (floored at the Viewport) so the view can actually scroll.
+        SetContentSize(
+            new Size(
+                Math.Max(Viewport.Width, GetWidthRequiredForSubViews()),
+                Math.Max(Viewport.Height, GetHeightRequiredForSubViews())
+            )
+        );
     }
     
     public void AddAgentMessage(AgentResponseUpdate message)
@@ -90,28 +124,42 @@ public class MessageView: View
             message.Y = Pos.Absolute(0);
         }
 
+        message.ContentChanged += OnMessageContentChanged;
+
         _messages.Add(message);
         Add(message);
+
+        RequestScrollToBottom ();
     }
+
+    private void OnMessageContentChanged (object? sender, EventArgs e) => RequestScrollToBottom ();
 
     /// <inheritdoc/>
     protected override void OnSubViewLayout(LayoutEventArgs args)
     {
         base.OnSubViewLayout(args);
+        UpdateContentSize();
+    }
 
-        if (SubViews.Count == 0)
+    /// <inheritdoc/>
+    /// <remarks>
+    ///     Runs after SubViews have been laid out, so message heights reflect any content that was
+    ///     just rendered (Markdown rebuilds lazily during layout). This is where a pending scroll
+    ///     request can safely be honoured.
+    /// </remarks>
+    protected override void OnSubViewsLaidOut(LayoutEventArgs args)
+    {
+        base.OnSubViewsLaidOut(args);
+
+        if (!_scrollToBottomPending)
         {
             return;
         }
 
-        // A base View tracks the Viewport size, so the content area never exceeds
-        // what is visible and scrolling is disabled. Size the content to the
-        // SubViews (floored at the Viewport) so the view can actually scroll.
-        SetContentSize(
-            new Size( 
-                Math.Max(Viewport.Width, GetWidthRequiredForSubViews()), 
-                Math.Max(Viewport.Height, GetHeightRequiredForSubViews())
-            )
-        );
+        _scrollToBottomPending = false;
+
+        // Re-read the content size now that SubViews have their final heights, then scroll.
+        UpdateContentSize();
+        ScrollToBottom ();
     }
 }

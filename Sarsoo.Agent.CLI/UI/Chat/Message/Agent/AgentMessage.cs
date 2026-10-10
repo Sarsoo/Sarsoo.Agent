@@ -60,6 +60,7 @@ public class AgentMessage<T>: AgentMessage, IAgentMessage<T> where T: AIContent
         if (content is T typedContent)
         {
             SetContent(typedContent);
+            RaiseContentChanged();
         }
         else
         {

@@ -6,6 +6,11 @@ namespace Sarsoo.Agent.CLI.UI.Chat.Message;
 
 public class BaseMessage: View
 {
+    /// <summary>
+    ///     Raised when the content of this message is updated (e.g. streamed text appended).
+    /// </summary>
+    public event EventHandler? ContentChanged;
+
     public BaseMessage()
     {
         Text = "";
@@ -19,4 +24,9 @@ public class BaseMessage: View
         MouseBindings.Add (MouseFlags.WheeledUp, Command.ScrollUp);
         MouseBindings.Add (MouseFlags.WheeledDown, Command.ScrollDown);
     }
+
+    /// <summary>
+    ///     Raises <see cref="ContentChanged"/> so the containing view can react (e.g. scroll to bottom).
+    /// </summary>
+    protected void RaiseContentChanged() => ContentChanged?.Invoke(this, EventArgs.Empty);
 }

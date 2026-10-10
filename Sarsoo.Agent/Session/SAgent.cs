@@ -11,7 +11,7 @@ public class SAgent(
     IChatClient client, 
     ILoggerFactory loggerFactory, 
     IServiceProvider serviceProvider
-): IAsyncDisposable
+): AIAgent, IAsyncDisposable
 {
     private ShellExecutor? _shell;
     private ShellEnvironmentProvider? _shellEnvironment;
@@ -59,11 +59,8 @@ public class SAgent(
         _chatPrompt = prompt;
         return this;
     }
-    
-    public IAsyncEnumerable<AgentResponseUpdate> RunStreamingAsync(
-        string message,
-        AgentSession? session = null,
-        AgentRunOptions? options = null,
+
+    protected override Task<AgentResponse> RunCoreAsync(IEnumerable<ChatMessage> messages, AgentSession? session = null, AgentRunOptions? options = null,
         CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Running agent");
@@ -72,14 +69,11 @@ public class SAgent(
             Init();
         }
         
-        return Harness.RunStreamingAsync(message, session, options, cancellationToken);
+        return Harness.RunAsync(messages: messages, session: session, options: options, cancellationToken: cancellationToken);
     }
 
-    public Task<AgentResponse> RunAsync(
-        string message,
-        AgentSession? session = null,
-        AgentRunOptions? options = null,
-        CancellationToken cancellationToken = default)
+    protected override IAsyncEnumerable<AgentResponseUpdate> RunCoreStreamingAsync(IEnumerable<ChatMessage> messages, AgentSession? session = null,
+        AgentRunOptions? options = null, CancellationToken cancellationToken = default)
     {
         logger.LogInformation("Running agent");
         if (_harness is null)
@@ -87,24 +81,18 @@ public class SAgent(
             Init();
         }
         
-        return Harness.RunAsync(message, session, options, cancellationToken);
+        return Harness.RunStreamingAsync(messages, session, options, cancellationToken);
     }
 
-    public Task<AgentResponse<T>> RunAsync<T>(
-        string message,
-        AgentSession? session = null,
-        JsonSerializerOptions? serializerOptions = null,
-        AgentRunOptions? options = null,
-        CancellationToken cancellationToken = default)
-    {
-        logger.LogInformation("Running agent");
-        if (_harness is null)
-        {
-            Init();
-        }
-        
-        return Harness.RunAsync<T>(message, session, serializerOptions, options, cancellationToken);
-    }
+    protected override ValueTask<AgentSession> CreateSessionCoreAsync(CancellationToken cancellationToken = default) => Harness.CreateSessionAsync(cancellationToken);
+
+    protected override ValueTask<JsonElement> SerializeSessionCoreAsync(AgentSession session, JsonSerializerOptions? jsonSerializerOptions = null,
+        CancellationToken cancellationToken = default) =>
+        Harness.SerializeSessionAsync(session, jsonSerializerOptions, cancellationToken);
+
+    protected override ValueTask<AgentSession> DeserializeSessionCoreAsync(JsonElement serializedState, JsonSerializerOptions? jsonSerializerOptions = null,
+        CancellationToken cancellationToken = default) =>
+        Harness.DeserializeSessionAsync(serializedState, jsonSerializerOptions, cancellationToken);
 
     public async ValueTask DisposeAsync()
     {
