@@ -4,12 +4,14 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.UI.Chat.Message;
+using Sarsoo.Agent.Integrations;
 using Sarsoo.Agent.Session;
 
 namespace Sarsoo.Agent.CLI.Session;
 
 public class AgentSessionLifetime(
     SAgent agent, 
+    IEnumerable<IStateChangeReceiver> stateChangeReceivers,
     MessageView messageView,
     TableSessionStats sessionStats,
     ILogger<AgentSessionLifetime> logger
@@ -27,10 +29,27 @@ public class AgentSessionLifetime(
         {
             field = value;
             StateChanged?.Invoke(this, State);
+            UpdateStateReceivers(State);
         }
     } = AgentState.Idle;
 
     public event EventHandler<AgentState>? StateChanged;
+
+    private Task UpdateStateReceivers(AgentState state)
+    {
+        if (!stateChangeReceivers.Any())
+        {
+            return Task.CompletedTask;
+        }
+        
+        return Task.Run(async () =>
+        {
+            await Parallel.ForEachAsync(stateChangeReceivers, async (receiver, token) =>
+            {
+                await receiver.StateChanged(State, token);
+            });
+        });
+    }
     
     public void PassMessage(string message)
     {
@@ -41,7 +60,11 @@ public class AgentSessionLifetime(
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Beginning agent lifetime monitor");
-        return Task.WhenAll(ProcessUserMessages(stoppingToken), ProcessAgentMessages(stoppingToken));
+        return Task.WhenAll(
+            ProcessUserMessages(stoppingToken), 
+            ProcessAgentMessages(stoppingToken),
+            UpdateStateReceivers(State)
+        );
     }
 
     private async Task ProcessUserMessages(CancellationToken stoppingToken)

@@ -13,15 +13,16 @@ public class TokenSessionStats(SessionStats stats): ITableSource
         => (row, col) switch
         {
             (0, 0) => "Input",
-            (0, 1) => stats.Usage.InputTokenCount?.ToString() ?? "0",
+            (0, 1) => stats.Usage.InputTokenCount?.ToString("N") ?? "0",
             (1, 0) => "Cached",
-            (1, 1) => stats.Usage.CachedInputTokenCount?.ToString() ?? "0",
+            (1, 1) => stats.Usage.CachedInputTokenCount?.ToString("N") ?? "0",
             (2, 0) => "Reasoning",
-            (2, 1) => stats.Usage.ReasoningTokenCount?.ToString() ?? "0",
+            (2, 1) => stats.Usage.ReasoningTokenCount?.ToString("N") ?? "0",
             (3, 0) => "Output",
-            (3, 1) => stats.Usage.OutputTokenCount?.ToString() ?? "0",
+            (3, 1) => stats.Usage.OutputTokenCount?.ToString("N") ?? "0",
             (4, 0) => "Total",
-            (4, 1) => stats.Usage.TotalTokenCount?.ToString() ?? "0",
+            (4, 1) => stats.Usage.TotalTokenCount?.ToString("N") ?? "0",
+            _ => "-"
         };
 
     public int Rows => 5;

@@ -12,8 +12,7 @@ public class TuiService(
     MainWindow mainWindow, 
     IHostApplicationLifetime lifetime, 
     ILogger<TuiService> logger, 
-    ILogger<IApplication> tuiLogger,
-    IConfiguration config
+    ILogger<IApplication> tuiLogger
 ): IHostedService
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();

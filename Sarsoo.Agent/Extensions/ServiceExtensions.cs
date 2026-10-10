@@ -1,6 +1,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sarsoo.Agent.Integrations;
 using Sarsoo.Agent.Options;
 using Sarsoo.Agent.Session;
 
@@ -15,6 +16,7 @@ public static class ServiceExtensions
             services.AddTransient<SAgent>()
                 .AddSingleton<ClientResolver>()
                 .AddSingleton<IChatClient>(sp => sp.GetRequiredService<ClientResolver>().GetClient())
+                .AddSingleton<IStateChangeReceiver, Herdr>()
                 .Configure<ProviderOptions>(configuration.GetSection(ProviderOptions.OptionsKey));
             
             if (configuration.GetValue<bool>("Stubbed"))
