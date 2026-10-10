@@ -8,10 +8,10 @@ using Sarsoo.Agent.Integrations;
 
 namespace Sarsoo.Agent.Session.Orchestration;
 
-public class AgentSessionRealtimeLifetime(
+public class AgentInteractiveLifetime(
     IEnumerable<IStateChangeReceiver> stateChangeReceivers,
     IToolGateEnforcer toolGateEnforcer,
-    ILogger<AgentSessionRealtimeLifetime> logger
+    ILogger<AgentInteractiveLifetime> logger
 ): BackgroundService
 {
     private readonly Channel<ChatMessage> _userMessages = Channel.CreateUnbounded<ChatMessage>();
@@ -64,7 +64,8 @@ public class AgentSessionRealtimeLifetime(
                 await Parallel.ForEachAsync(stateChangeReceivers,
                         async (receiver, token) => { await receiver.StateChanged(State, token).ConfigureAwait(false); })
                     .ConfigureAwait(false);
-            });
+            })
+                .ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -98,7 +99,7 @@ public class AgentSessionRealtimeLifetime(
             while (Agent is null)
             {
                 logger.LogInformation("Agent has not been provided, waiting before starting user message processing");
-                await Task.WhenAny(_agentSet.Task, Task.Delay(100, stoppingToken));
+                await Task.WhenAny(_agentSet.Task, Task.Delay(100, stoppingToken)).ConfigureAwait(false);
             }
             
             logger.LogInformation("Creating agent session");

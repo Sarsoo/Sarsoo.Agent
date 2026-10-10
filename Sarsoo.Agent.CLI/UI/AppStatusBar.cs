@@ -7,7 +7,7 @@ namespace Sarsoo.Agent.CLI.UI;
 
 public class AppStatusBar: StatusBar
 {
-    private readonly AgentSessionRealtimeLifetime _agentSessionLifetime;
+    private readonly AgentInteractiveLifetime _agentSessionLifetime;
 
     private readonly Label _agentState = new()
     {
@@ -15,7 +15,7 @@ public class AppStatusBar: StatusBar
         CanFocus = false,
     };
     
-    public AppStatusBar(AgentSessionRealtimeLifetime agentSessionLifetime)
+    public AppStatusBar(AgentInteractiveLifetime agentSessionLifetime)
     {
         _agentSessionLifetime = agentSessionLifetime;
         Width = Dim.Fill();

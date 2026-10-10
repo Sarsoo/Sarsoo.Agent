@@ -1,4 +1,6 @@
+using Microsoft.Extensions.AI;
 using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.Extensions;
 using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
@@ -8,6 +10,16 @@ namespace Sarsoo.Agent.CLI.UI.Chat.Tool;
 
 public class ToolApproval: View
 {
+    private readonly View _toolSignature = new()
+    {
+        CanFocus = false,
+        TabStop = TabBehavior.NoStop,
+        TextAlignment = Alignment.Center,
+        Width = Dim.Fill(),
+        Height = Dim.Auto(),
+        BorderStyle = LineStyle.Rounded
+    };
+    
     private readonly CheckBox _approval = new()
     {
         CanFocus = true,
@@ -35,9 +47,19 @@ public class ToolApproval: View
         Width = Dim.Fill();
         Height = Dim.Fill();
         
+        _approval.Y = Pos.Bottom(_toolSignature);
         _additionalPrompt.Y = Pos.Bottom(_approval);
         
-        Add(_approval, _additionalPrompt);
+        Add(_toolSignature, _approval, _additionalPrompt);
+    }
+    
+    public void SetTool(ToolApprovalRequestContent content)
+    {
+        if (content.ToolCall is FunctionCallContent tool)
+        {
+            _toolSignature.Text = tool.Signature;
+            _toolSignature.SetNeedsDraw();
+        }
     }
     
     public (bool, string?) Value

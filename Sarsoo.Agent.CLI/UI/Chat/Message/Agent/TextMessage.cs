@@ -31,6 +31,8 @@ public class TextMessage: AgentMessage<TextContent>
         Add(Markdown);
     }
     
+    private string _totalMessage = string.Empty;
+    private readonly Lock _messageLock = new();
     public override void SetContent(TextContent content)
     {
         Content = content;
@@ -38,9 +40,15 @@ public class TextMessage: AgentMessage<TextContent>
         var c = content.ToString();
         if (!string.IsNullOrEmpty(c))
         {
+            string toSet;
+            lock (_messageLock)
+            {
+                _totalMessage += c;
+                toSet = _totalMessage;
+            }
             App?.Invoke(() =>
                 {
-                    Markdown.Text += c;
+                    Markdown.Text = toSet;
                 }
             );
         }

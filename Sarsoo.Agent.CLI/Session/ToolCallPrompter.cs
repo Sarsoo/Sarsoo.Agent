@@ -23,8 +23,10 @@ public class ToolCallPrompter(IApplication app, ILogger<ToolCallPrompter> logger
                 beginInitHandler: (o) =>
                 {
                     o.Text = "Tool Request";
-                    o.Height = Dim.Absolute(8);
-                    o.Width = Dim.Absolute(40);
+                    o.Height = Dim.Absolute(15);
+                    o.Width = Dim.Absolute(75);
+                    
+                    o.GetWrappedView().SetTool(request);
                 });
             waiter.Set();
         });

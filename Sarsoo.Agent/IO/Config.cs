@@ -4,6 +4,11 @@ public static class Config
 {
     public static string GetConfigDir()
     {
+        if (Environment.GetEnvironmentVariable("REEVES_CONFIG_DIR") is { } reevesConfigDir)
+        {
+            return reevesConfigDir;
+        }
+        
         string? baseDir = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
         
         if (baseDir is null)

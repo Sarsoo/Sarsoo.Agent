@@ -12,10 +12,10 @@ namespace Sarsoo.Agent.CLI.UI.Chat;
 
 public class ChatTextField: TextField
 {
-    private readonly AgentSessionRealtimeLifetime _agentSession;
+    private readonly AgentInteractiveLifetime _agentSession;
     private readonly ILogger<ChatTextField> _logger;
 
-    public ChatTextField(AgentSessionRealtimeLifetime agentSession, ILogger<ChatTextField> logger)
+    public ChatTextField(AgentInteractiveLifetime agentSession, ILogger<ChatTextField> logger)
     {
         _agentSession = agentSession;
         _logger = logger;

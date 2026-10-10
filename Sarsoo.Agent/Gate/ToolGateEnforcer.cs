@@ -28,7 +28,7 @@ public class ToolGateEnforcer(
         foreach (var policy in policies)
         {
             logger.LogInformation("Requesting tool approval from policy {policy}", policy.GetType().Name);
-            results.Add(await policy.Request(request, cancel));
+            results.Add(await policy.Request(request, cancel).ConfigureAwait(false));
         }
 
         if (options.Value.PolicyRule == ToolGatePolicyRules.All)

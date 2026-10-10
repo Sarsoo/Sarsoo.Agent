@@ -1,5 +1,6 @@
 using System.Drawing;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Extensions;
 using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
@@ -94,7 +95,8 @@ public class MessageView: View
             AgentMessage? cursor = m.LastOrDefault();
             foreach (var content in message.Contents)
             {
-                if (cursor?.ContentType == content.ContentType)
+                if (cursor?.ContentType == content.ContentType
+                    && content is not (ToolCallContent or ToolResultContent))
                 {
                     cursor.SetContent(content);
                 }

@@ -1,4 +1,5 @@
 using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.Session;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
@@ -8,8 +9,9 @@ namespace Sarsoo.Agent.CLI.UI.Stats;
 
 public class StatsSideBarView: View
 {
-    private readonly TableSessionStats _stats;
-    
+    private readonly StatsTables _statsTables;
+    private readonly AgentSessionContext _context;
+
     private readonly View _tokensLabel = new()
     {
         Text = "Tokens",
@@ -21,7 +23,7 @@ public class StatsSideBarView: View
 
     private TableView _tableView = new()
     {
-        Width = Dim.Percent(100),
+        Width = Dim.Fill(),
         Height = Dim.Auto(),
         Style = new()
         {
@@ -50,29 +52,18 @@ public class StatsSideBarView: View
         }
     };
     
-    public StatsSideBarView(TableSessionStats stats)
+    public StatsSideBarView(
+        StatsTables statsTables
+    )
     {
-        _stats = stats;
-        
+        _statsTables = statsTables;
+
         CanFocus = false;
         BorderStyle = LineStyle.RoundedDotted;
         
-        _tableView.Table = stats.Tokens;
-        stats.Updated += OnStatsOnUpdated;
+        _tableView.Table = statsTables.Tokens;
 
         _tableView.Y = Pos.Bottom(_tokensLabel);
         Add(_tokensLabel, _tableView);
-    }
-
-    private void OnStatsOnUpdated(object? sender, EventArgs args)
-    {
-        _tableView.SetNeedsDraw();
-    }
-
-    protected override void Dispose(bool disposing)
-    {
-        _stats.Updated -= OnStatsOnUpdated;
-        
-        base.Dispose(disposing);
     }
 }

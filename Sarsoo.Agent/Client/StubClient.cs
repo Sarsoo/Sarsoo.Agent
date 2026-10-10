@@ -2,7 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 
-namespace Sarsoo.Agent.Session;
+namespace Sarsoo.Agent.Client;
 
 public class StubClient: IChatClient
 {

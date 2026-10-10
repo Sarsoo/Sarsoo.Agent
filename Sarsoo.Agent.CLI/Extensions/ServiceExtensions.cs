@@ -1,13 +1,17 @@
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Session;
 using Sarsoo.Agent.CLI.UI;
 using Sarsoo.Agent.CLI.UI.Chat;
 using Sarsoo.Agent.CLI.UI.Chat.Message;
 using Sarsoo.Agent.CLI.UI.Menu;
 using Sarsoo.Agent.CLI.UI.Stats;
+using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.Extensions;
 using Sarsoo.Agent.Gate;
+using Sarsoo.Agent.Session;
 using Terminal.Gui.App;
 
 namespace Sarsoo.Agent.CLI.Extensions;
@@ -28,7 +32,7 @@ public static class ServiceExtensions
                 
                 .AddSingleton<ChatView>()
                 .AddSingleton<StatsSideBarView>()
-                .AddSingleton<TableSessionStats>()
+                .AddSingleton<StatsTables>()
                 .AddSingleton<MessageView>()
                 .AddSingleton<ChatTextField>();
             
@@ -38,6 +42,12 @@ public static class ServiceExtensions
         public IServiceCollection AddAgentSessions(IConfiguration configuration)
         {
             serviceCollection.AddAgent(configuration)
+                .AddSingleton<AgentSessionContext>(sp => 
+                    new AgentBuilder(sp.GetRequiredService<IChatClient>(), sp.GetRequiredService<ILoggerFactory>(), sp)
+                        .WithBashShell()
+                        .WithAgentsMd()
+                        .Build()
+                )
                 .AddSingleton<SessionUiBinding>()
                 .AddHostedService<SessionUiBinding>(sp => sp.GetRequiredService<SessionUiBinding>());
             

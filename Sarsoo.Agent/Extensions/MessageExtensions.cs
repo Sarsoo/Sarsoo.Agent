@@ -7,6 +7,33 @@ namespace Sarsoo.Agent.Extensions;
 
 public static class MessageExtensions
 {
+    extension(FunctionCallContent content)
+    {
+        public string Signature
+        {
+            get
+            {
+                var ret = content.Name;
+                if (content.Arguments is not null)
+                {
+                    var args = new List<string>();
+                
+                    foreach (var (k, v) in content.Arguments)
+                    {
+                        args.Add($"{k}: {v}");
+                    }
+
+                    if (args.Count > 0)
+                    {
+                        ret += $"({string.Join(", ", args)})";
+                    }
+                }
+
+                return ret;
+            }
+        }
+    }
+    
     extension(AgentResponseUpdate update)
     {
         public string Thinking

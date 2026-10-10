@@ -22,7 +22,10 @@ public class Herdr(ILogger<Herdr> logger) : IStateChangeReceiver
         if (InHerdr)
         {
             await RunHerdrCommand(
-                $"""pane report-agent "{PaneId}" --source "reeve" --agent "reeve" --state "{state.HerdrState}" --seq "{_seqId++}" """, token);
+                $"""pane report-agent "{PaneId}" --source "reeve" --agent "reeve" --state "{state.HerdrState}" --seq "{_seqId++}" """, 
+                token
+                )
+                .ConfigureAwait(false);
         }
     }
 
@@ -38,7 +41,7 @@ public class Herdr(ILogger<Herdr> logger) : IStateChangeReceiver
                 process.StartInfo.Arguments = command;
 
                 process.Start();
-                await process.WaitForExitAsync(cancellationToken);
+                await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
                 logger.LogInformation("Herdr command exited with code {exitCode}", process.ExitCode);
             }
         }
