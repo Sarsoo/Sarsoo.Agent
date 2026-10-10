@@ -1,6 +1,5 @@
-using Sarsoo.Agent.CLI.Session;
 using Sarsoo.Agent.Session;
-using Terminal.Gui.Drawing;
+using Sarsoo.Agent.Session.Orchestration;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -8,15 +7,15 @@ namespace Sarsoo.Agent.CLI.UI;
 
 public class AppStatusBar: StatusBar
 {
-    private readonly AgentSessionLifetime _agentSessionLifetime;
+    private readonly AgentSessionRealtimeLifetime _agentSessionLifetime;
 
-    private Label _agentState = new()
+    private readonly Label _agentState = new()
     {
         Text = "Idle",
         CanFocus = false,
     };
     
-    public AppStatusBar(AgentSessionLifetime agentSessionLifetime)
+    public AppStatusBar(AgentSessionRealtimeLifetime agentSessionLifetime)
     {
         _agentSessionLifetime = agentSessionLifetime;
         Width = Dim.Fill();

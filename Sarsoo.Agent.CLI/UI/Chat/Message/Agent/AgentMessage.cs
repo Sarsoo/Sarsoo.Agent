@@ -38,6 +38,7 @@ public class AgentMessage<T>: AgentMessage, IAgentMessage<T> where T: AIContent
     {
         Content = content;
         Text = content.ToString() ?? "";
+        Title = Content.ContentType.ToString() ?? "";
     }
 
     public override ContentType? ContentType => Content?.ContentType;

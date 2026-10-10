@@ -4,9 +4,9 @@ using Microsoft.Extensions.Options;
 using OpenAI;
 using Sarsoo.Agent.Options;
 
-namespace Sarsoo.Agent.Session;
+namespace Sarsoo.Agent.Session.Init;
 
-public class ClientResolver(IOptions<ProviderOptions> options)
+public class ClientResolver(IOptions<ProviderOptions> options) : IClientResolver
 {
     public IChatClient GetClient()
     {

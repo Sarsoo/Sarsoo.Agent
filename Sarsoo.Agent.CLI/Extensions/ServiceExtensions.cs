@@ -7,6 +7,7 @@ using Sarsoo.Agent.CLI.UI.Chat.Message;
 using Sarsoo.Agent.CLI.UI.Menu;
 using Sarsoo.Agent.CLI.UI.Stats;
 using Sarsoo.Agent.Extensions;
+using Sarsoo.Agent.Gate;
 using Terminal.Gui.App;
 
 namespace Sarsoo.Agent.CLI.Extensions;
@@ -21,6 +22,7 @@ public static class ServiceExtensions
 
                 .AddSingleton<IApplication>(_ => Application.Create())
                 .AddSingleton<MainWindow>()
+                .AddSingleton<IToolGate, ToolCallPrompter>()
                 .AddSingleton<AppMenu>()
                 .AddSingleton<AppStatusBar>()
                 
@@ -36,8 +38,8 @@ public static class ServiceExtensions
         public IServiceCollection AddAgentSessions(IConfiguration configuration)
         {
             serviceCollection.AddAgent(configuration)
-                .AddSingleton<AgentSessionLifetime>()
-                .AddHostedService<AgentSessionLifetime>(sp => sp.GetRequiredService<AgentSessionLifetime>());
+                .AddSingleton<SessionUiBinding>()
+                .AddHostedService<SessionUiBinding>(sp => sp.GetRequiredService<SessionUiBinding>());
             
             return serviceCollection;
         }

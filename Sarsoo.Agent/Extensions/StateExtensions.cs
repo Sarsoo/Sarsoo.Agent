@@ -10,6 +10,7 @@ public static class StateExtensions
         {
             AgentState.Idle => "idle",
             AgentState.Busy => "working",
+            AgentState.Blocked => "blocked",
             _ => throw new ArgumentOutOfRangeException(nameof(state), state, null)
         };
     }

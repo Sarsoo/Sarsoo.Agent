@@ -44,7 +44,7 @@ public class StubClient: IChatClient
     {
         foreach (var idx in Enumerable.Range(0, 10))
         {
-            await Task.Delay(100, cancellationToken);
+            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             yield return new ChatResponseUpdate()
             {
                 ResponseId = Guid.NewGuid().ToString(),
@@ -53,7 +53,7 @@ public class StubClient: IChatClient
                     new TextReasoningContent($"hmmmmm..... ({idx})"),
                 ]
             };
-            await Task.Delay(100, cancellationToken);
+            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             yield return new ChatResponseUpdate()
             {
                 ResponseId = Guid.NewGuid().ToString(),
@@ -65,7 +65,7 @@ public class StubClient: IChatClient
                     new TextContent($"\n\n\nwahoo! ({idx})"),
                 ]
             };
-            await Task.Delay(100, cancellationToken);
+            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
             yield return new ChatResponseUpdate()
             {
                 ResponseId = Guid.NewGuid().ToString(),

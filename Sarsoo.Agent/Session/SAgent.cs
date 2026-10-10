@@ -20,10 +20,10 @@ public class SAgent(
     
     private string? _harnessPrompt = null;
     private string? _chatPrompt = null;
-    
-    public HarnessAgent Harness => _harness ?? throw new InvalidOperationException("Agent not initialized");
-    
-    public void Init()
+
+    private HarnessAgent Harness => _harness ?? throw new InvalidOperationException("Agent not initialized");
+
+    private void Init()
     {
         logger.LogInformation("Initializing agent");
         
@@ -37,7 +37,9 @@ public class SAgent(
             ChatOptions = new()
             {
                 Instructions = _chatPrompt,
-                Tools = [_shell.AsAIFunction(name: "bash", description: "Execute a bash command", requireApproval: false)]
+                Tools = [
+                    _shell.AsAIFunction(name: "bash", description: "Execute a bash command", requireApproval: true)
+                ]
             },
             DisableTodoProvider = true,
             DisableWebSearch = true,
@@ -84,7 +86,16 @@ public class SAgent(
         return Harness.RunStreamingAsync(messages, session, options, cancellationToken);
     }
 
-    protected override ValueTask<AgentSession> CreateSessionCoreAsync(CancellationToken cancellationToken = default) => Harness.CreateSessionAsync(cancellationToken);
+    protected override ValueTask<AgentSession> CreateSessionCoreAsync(CancellationToken cancellationToken = default) 
+    {
+        logger.LogInformation("Creating session");
+        if (_harness is null)
+        {
+            Init();
+        }
+        
+        return Harness.CreateSessionAsync(cancellationToken);
+    }
 
     protected override ValueTask<JsonElement> SerializeSessionCoreAsync(AgentSession session, JsonSerializerOptions? jsonSerializerOptions = null,
         CancellationToken cancellationToken = default) =>

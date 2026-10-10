@@ -25,6 +25,7 @@
       <PackageReference Include="Microsoft.Agents.AI.Abstractions" Version="1.24.0" />
       <PackageReference Include="Microsoft.Agents.AI.Harness" Version="1.24.0" />
       <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.24.0-alpha.261006.1" />
+      <PackageReference Include="Microsoft.Agents.AI.LocalCodeAct" Version="1.24.0-preview.261006.1" />
       <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.24.0" />
       <PackageReference Include="Microsoft.Agents.AI.Tools.Shell" Version="1.24.0-preview.261006.1" />
       <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.10.1" />

@@ -111,7 +111,7 @@ public class CatppuccinThemeTests
     {
         Assert.Equal ("AgentMessage", new TextMessage (new TextContent ("hi")).SchemeName);
         Assert.Equal ("ReasoningMessage", new ReasoningMessage (new TextReasoningContent ("thinking")).SchemeName);
-        Assert.Equal ("UserMessage", new UserMessage ().SchemeName);
+        Assert.Equal ("UserMessage", new UserMessage(new ChatMessage()).SchemeName);
         Assert.Equal ("FunctionCallMessage", new FunctionCallMessage (new FunctionCallContent ("id", "name")).SchemeName);
         Assert.Equal ("FunctionResultMessage", new FunctionResultMessage (new FunctionResultContent ("id", "result")).SchemeName);
     }

@@ -1,17 +1,21 @@
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.UI.Chat.Tool;
+using Sarsoo.Agent.Session.Orchestration;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
+using Terminal.Gui.Resources;
+using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
 namespace Sarsoo.Agent.CLI.UI.Chat;
 
 public class ChatTextField: TextField
 {
-    private readonly AgentSessionLifetime _agentSession;
+    private readonly AgentSessionRealtimeLifetime _agentSession;
     private readonly ILogger<ChatTextField> _logger;
 
-    public ChatTextField(AgentSessionLifetime agentSession, ILogger<ChatTextField> logger)
+    public ChatTextField(AgentSessionRealtimeLifetime agentSession, ILogger<ChatTextField> logger)
     {
         _agentSession = agentSession;
         _logger = logger;

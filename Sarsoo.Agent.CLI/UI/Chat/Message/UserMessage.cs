@@ -1,13 +1,16 @@
-using Terminal.Gui.Drawing;
-using Terminal.Gui.Text;
+using Microsoft.Extensions.AI;
 
 namespace Sarsoo.Agent.CLI.UI.Chat.Message;
 
 public class UserMessage: BaseMessage
 {
-    public UserMessage() : base()
+    public ChatMessage Content { get; protected set; }
+
+    public UserMessage(ChatMessage message) : base()
     {
+        Content = message;
         Title = "";
         SchemeName = "UserMessage";
+        Text = Content.Text;
     }
 }
