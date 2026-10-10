@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <AssemblyName>sai</AssemblyName>
+        <AssemblyName>reeve</AssemblyName>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -32,6 +32,7 @@
 
     <ItemGroup>
         <TrimmerRootDescriptor Include="TrimmerRoots.xml" />
+        <EmbeddedResource Include="config.json" />
     </ItemGroup>
 
     <ItemGroup>

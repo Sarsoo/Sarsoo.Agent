@@ -30,7 +30,7 @@ public static class InitTui
         
         var nlogConfig = new LoggingConfiguration();
         var fileTarget = new FileTarget();
-        fileTarget.FileName = Path.Combine(Config.GetConfigDir(), "sant.log");
+        fileTarget.FileName = Path.Combine(Config.GetConfigDir(), "reeve.log");
         nlogConfig.AddTarget("file", fileTarget);
         nlogConfig.AddRule(NLog.LogLevel.Info, NLog.LogLevel.Fatal, fileTarget);
         

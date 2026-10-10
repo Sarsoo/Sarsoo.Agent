@@ -27,7 +27,7 @@ public class MainWindow: Window
         _chat = chat;
         _stats = stats;
         
-        Title = "Sarsoo Agent";
+        Title = "reeve";
         BorderStyle = LineStyle.None;
 
         var container = new View()

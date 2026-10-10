@@ -9,7 +9,7 @@ public static class Logging
     {
         LogManager.Setup().LoadConfiguration(builder =>
         {
-            builder.ForLogger().FilterMinLevel(LogLevel.Trace).WriteToFile(Path.Combine(Config.GetConfigDir(), "sant.log"));
+            builder.ForLogger().FilterMinLevel(LogLevel.Trace).WriteToFile(Path.Combine(Config.GetConfigDir(), "reeve.log"));
         });
 
         var logger = LogManager.GetCurrentClassLogger();
