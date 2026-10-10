@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.UI.Chat.Message;
@@ -9,7 +10,8 @@ namespace Sarsoo.Agent.CLI.Session;
 
 public class AgentSessionLifetime(
     SAgent agent, 
-    MessageView messageView, 
+    MessageView messageView,
+    TableSessionStats sessionStats,
     ILogger<AgentSessionLifetime> logger
 ): BackgroundService
 {
@@ -17,6 +19,18 @@ public class AgentSessionLifetime(
     private readonly Channel<AgentResponseUpdate> _agentMessages = Channel.CreateUnbounded<AgentResponseUpdate>();
     
     private AgentSession? _session;
+
+    public AgentState State
+    {
+        get;
+        private set
+        {
+            field = value;
+            StateChanged?.Invoke(this, State);
+        }
+    } = AgentState.Idle;
+
+    public event EventHandler<AgentState>? StateChanged;
     
     public void PassMessage(string message)
     {
@@ -48,6 +62,7 @@ public class AgentSessionLifetime(
                 });
                 messageView.SetNeedsDraw();
 
+                State = AgentState.Busy;
                 await foreach (var agentResponse in agent
                                    .RunStreamingAsync(userMessage, session: _session, cancellationToken: stoppingToken)
                                    .ConfigureAwait(false))
@@ -55,6 +70,7 @@ public class AgentSessionLifetime(
                     logger.LogDebug("Queuing agent update: {agent_message}", agentResponse);
                     _agentMessages.Writer.TryWrite(agentResponse);
                 }
+                State = AgentState.Idle;
             }
         }
         catch (Exception e)
@@ -71,6 +87,14 @@ public class AgentSessionLifetime(
                                .ConfigureAwait(false))
             {
                 messageView.AddAgentMessage(agentResponseUpdate);
+
+                foreach (var usage in agentResponseUpdate.Contents)
+                {
+                    if (usage is UsageContent usageContent)
+                    {
+                        sessionStats.Add(usageContent.Details);
+                    }
+                }
             }
         }
         catch (Exception e)

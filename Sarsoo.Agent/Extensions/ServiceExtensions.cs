@@ -17,6 +17,15 @@ public static class ServiceExtensions
                 .AddSingleton<IChatClient>(sp => sp.GetRequiredService<ClientResolver>().GetClient())
                 .Configure<ProviderOptions>(configuration.GetSection(ProviderOptions.OptionsKey));
             
+            if (configuration.GetValue<bool>("Stubbed"))
+            {
+                services.AddSingleton<IChatClient, StubClient>();
+            }
+            else
+            {
+                services.AddSingleton<IChatClient>(sp => sp.GetRequiredService<ClientResolver>().GetClient());
+            }
+            
             return services;
         }
     }

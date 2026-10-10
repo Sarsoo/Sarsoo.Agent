@@ -17,7 +17,7 @@ public class ChatView: View
         _messageView = messageView;
         _textField = textField;
         
-        messageView.BorderStyle = LineStyle.Dashed;
+        messageView.BorderStyle = LineStyle.None;
         messageView.Height = Dim.Fill(textField);
         messageView.Width = Dim.Fill();
         

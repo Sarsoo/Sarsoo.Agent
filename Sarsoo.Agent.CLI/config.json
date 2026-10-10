@@ -365,6 +365,18 @@
             "Foreground": "#a6e3a1",
             "Background": "#313244"
           }
+        },
+        "StatusBarIdle": {
+          "Normal": {
+            "Foreground": "#cdd6f4",
+            "Background": "#313244"
+          }
+        },
+        "StatusBarBusy": {
+          "Normal": {
+            "Foreground": "#11111b",
+            "Background": "#b4befe"
+          }
         }
       }
     },
@@ -730,6 +742,18 @@
           "Normal": {
             "Foreground": "#40a02b",
             "Background": "#ccd0da"
+          }
+        },
+        "StatusBarIdle": {
+          "Normal": {
+            "Foreground": "#4c4f69",
+            "Background": "#ccd0da"
+          }
+        },
+        "StatusBarBusy": {
+          "Normal": {
+            "Foreground": "#dce0e8",
+            "Background": "#7287fd"
           }
         }
       }

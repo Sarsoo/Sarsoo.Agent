@@ -25,7 +25,8 @@ public static class ServiceExtensions
                 .AddSingleton<AppStatusBar>()
                 
                 .AddSingleton<ChatView>()
-                .AddSingleton<StatsBarView>()
+                .AddSingleton<StatsSideBarView>()
+                .AddSingleton<TableSessionStats>()
                 .AddSingleton<MessageView>()
                 .AddSingleton<ChatTextField>();
             

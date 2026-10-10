@@ -13,19 +13,19 @@ public class MainWindow: Window
     private readonly AppMenu _menu;
     private readonly AppStatusBar _appStatus;
     private readonly ChatView _chat;
-    private readonly StatsBarView _stats;
+    private readonly StatsSideBarView _statsSide;
 
     public MainWindow(
         AppMenu menu, 
         AppStatusBar appStatus, 
         ChatView chat,
-        StatsBarView stats
+        StatsSideBarView statsSide
     )
     {
         _menu = menu;
         _appStatus = appStatus;
         _chat = chat;
-        _stats = stats;
+        _statsSide = statsSide;
         
         Title = "reeve";
         BorderStyle = LineStyle.None;
@@ -40,12 +40,12 @@ public class MainWindow: Window
 
         chat.Height = Dim.Fill();
         chat.Width = Dim.Percent(80);
-        stats.Height = Dim.Fill();
-        stats.Width = Dim.Fill();
+        statsSide.Height = Dim.Fill();
+        statsSide.Width = Dim.Fill();
         
-        stats.X = Pos.Right(chat);
+        statsSide.X = Pos.Right(chat);
         
-        container.Add(chat, stats);
+        container.Add(chat, statsSide);
         Add(menu, container, appStatus);
         
         _chat.FocusText();
