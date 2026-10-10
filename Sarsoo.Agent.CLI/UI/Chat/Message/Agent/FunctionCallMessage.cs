@@ -9,6 +9,7 @@ public class FunctionCallMessage: AgentMessage<FunctionCallContent>
     {
         Title = "Function";
         BorderStyle = LineStyle.Rounded;
+        SchemeName = "FunctionCallMessage";
         
         Text = GetFunctionDisplay(content);
     }

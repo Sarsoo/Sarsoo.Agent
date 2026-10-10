@@ -22,6 +22,7 @@ public class AgentMessage: BaseMessage, IAgentMessage
     public AgentMessage() : base()
     {
         Title = "";
+        SchemeName = "AgentMessage";
     }
 
     public virtual ContentType? ContentType => null;

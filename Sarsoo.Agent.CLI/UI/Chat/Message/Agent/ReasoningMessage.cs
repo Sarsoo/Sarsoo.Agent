@@ -9,5 +9,6 @@ public class ReasoningMessage: AgentMessage<TextReasoningContent>
     {
         Title = "Thinking....";
         BorderStyle = LineStyle.RoundedDashed;
+        SchemeName = "ReasoningMessage";
     }
 }

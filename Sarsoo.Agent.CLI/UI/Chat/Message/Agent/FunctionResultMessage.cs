@@ -9,6 +9,7 @@ public class FunctionResultMessage: AgentMessage<FunctionResultContent>
     {
         Title = "";
         BorderStyle = LineStyle.None;
+        SchemeName = "FunctionResultMessage";
         
         Text = content.Result?.ToString() ?? "";
     }

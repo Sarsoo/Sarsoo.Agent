@@ -8,5 +8,6 @@ public class UserMessage: BaseMessage
     public UserMessage() : base()
     {
         Title = "";
+        SchemeName = "UserMessage";
     }
 }

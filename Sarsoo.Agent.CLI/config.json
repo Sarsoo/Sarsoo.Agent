@@ -330,6 +330,41 @@
             "Background": "#313244",
             "Style": "Italic"
           }
+        },
+        "AgentMessage": {
+          "Normal": {
+            "Foreground": "#cdd6f4",
+            "Background": "#1e1e2e"
+          },
+          "Code": {
+            "Foreground": "#cdd6f4",
+            "Background": "#11111b"
+          }
+        },
+        "UserMessage": {
+          "Normal": {
+            "Foreground": "#cdd6f4",
+            "Background": "#45475a"
+          }
+        },
+        "ReasoningMessage": {
+          "Normal": {
+            "Foreground": "#7f849c",
+            "Background": "#181825",
+            "Style": "Italic"
+          }
+        },
+        "FunctionCallMessage": {
+          "Normal": {
+            "Foreground": "#89b4fa",
+            "Background": "#11111b"
+          }
+        },
+        "FunctionResultMessage": {
+          "Normal": {
+            "Foreground": "#a6e3a1",
+            "Background": "#313244"
+          }
         }
       }
     },
@@ -660,6 +695,41 @@
             "Foreground": "#8c8fa1",
             "Background": "#ccd0da",
             "Style": "Italic"
+          }
+        },
+        "AgentMessage": {
+          "Normal": {
+            "Foreground": "#4c4f69",
+            "Background": "#eff1f5"
+          },
+          "Code": {
+            "Foreground": "#4c4f69",
+            "Background": "#dce0e8"
+          }
+        },
+        "UserMessage": {
+          "Normal": {
+            "Foreground": "#4c4f69",
+            "Background": "#bcc0cc"
+          }
+        },
+        "ReasoningMessage": {
+          "Normal": {
+            "Foreground": "#8c8fa1",
+            "Background": "#e6e9ef",
+            "Style": "Italic"
+          }
+        },
+        "FunctionCallMessage": {
+          "Normal": {
+            "Foreground": "#1e66f5",
+            "Background": "#dce0e8"
+          }
+        },
+        "FunctionResultMessage": {
+          "Normal": {
+            "Foreground": "#40a02b",
+            "Background": "#ccd0da"
           }
         }
       }

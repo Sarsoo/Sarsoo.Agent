@@ -1,5 +1,8 @@
 using System.Text.Json.Nodes;
+using Microsoft.Extensions.AI;
 using Sarsoo.Agent.CLI.UI;
+using Sarsoo.Agent.CLI.UI.Chat.Message;
+using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Drawing;
 
@@ -76,5 +79,40 @@ public class CatppuccinThemeTests
         {
             TuiConfigurationBuilder.Shared.ApplyToStaticFacades ();
         }
+    }
+
+    [Theory]
+    [InlineData ("Catppuccin Mocha", "#1e1e2e", "#45475a", "#181825")]
+    [InlineData ("Catppuccin Latte", "#eff1f5", "#bcc0cc", "#e6e9ef")]
+    public void Theme_DefinesDistinctMessageSchemes (string themeName, string agentBackground, string userBackground, string reasoningBackground)
+    {
+        JsonObject config = JsonNode.Parse (ReadEmbeddedConfig ())!.AsObject ();
+        config ["Theme"] = themeName;
+
+        var builder = new TuiConfigurationBuilder ("sarsoo-agent-tests") { RuntimeConfig = config.ToJsonString () };
+
+        try
+        {
+            builder.ApplyToStaticFacades ();
+
+            Assert.Equal (Color.Parse (agentBackground), SchemeManager.GetScheme ("AgentMessage").Normal.Background);
+            Assert.Equal (Color.Parse (userBackground), SchemeManager.GetScheme ("UserMessage").Normal.Background);
+            Assert.Equal (Color.Parse (reasoningBackground), SchemeManager.GetScheme ("ReasoningMessage").Normal.Background);
+            Assert.True (SchemeManager.GetScheme ("ReasoningMessage").Normal.Style.HasFlag (TextStyle.Italic));
+        }
+        finally
+        {
+            TuiConfigurationBuilder.Shared.ApplyToStaticFacades ();
+        }
+    }
+
+    [Fact]
+    public void MessageViews_SelectTheirThemeSchemes ()
+    {
+        Assert.Equal ("AgentMessage", new TextMessage (new TextContent ("hi")).SchemeName);
+        Assert.Equal ("ReasoningMessage", new ReasoningMessage (new TextReasoningContent ("thinking")).SchemeName);
+        Assert.Equal ("UserMessage", new UserMessage ().SchemeName);
+        Assert.Equal ("FunctionCallMessage", new FunctionCallMessage (new FunctionCallContent ("id", "name")).SchemeName);
+        Assert.Equal ("FunctionResultMessage", new FunctionResultMessage (new FunctionResultContent ("id", "result")).SchemeName);
     }
 }
