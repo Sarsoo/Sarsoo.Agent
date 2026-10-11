@@ -37,7 +37,7 @@ public class AgentSessionContext(AIAgent agent): IAsyncDisposable
                 _sessionLock.Release();
             }
         }
-        catch (OperationCanceledException e)
+        catch (OperationCanceledException)
         {
             return false;
         }
@@ -80,7 +80,7 @@ public class AgentSessionContext(AIAgent agent): IAsyncDisposable
             {
                 disposable.Dispose();
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 
             }
@@ -92,7 +92,7 @@ public class AgentSessionContext(AIAgent agent): IAsyncDisposable
             {
                 await disposable.DisposeAsync().ConfigureAwait(false);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 
             }

@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.Context;
 using Sarsoo.Agent.Session;
+#pragma warning disable MAAI001
 
 namespace Sarsoo.Agent.Composition;
 
@@ -20,6 +21,9 @@ public class AgentBuilder
     private readonly List<AIContextProvider> _contextProviders = new();
     private readonly List<AITool> _tools = new();
     private readonly List<Func<ToolAutoApprovalRuleContext, ValueTask<bool>>> _autoApprovalRules = new();
+
+    private AgentFileStore? _fileStore = null;
+    private FileAccessProviderOptions? _fileAccessOptions = null;
     
     public AgentBuilder(
         IChatClient client,
@@ -75,6 +79,16 @@ public class AgentBuilder
         
         _contextProviders.Add(skillsProvider);
         
+        return this;
+    }
+
+    public AgentBuilder WithFileSystem()
+    {
+        _fileStore = new FileSystemAgentFileStore(Directory.GetCurrentDirectory());
+        _fileAccessOptions = new()
+        {
+            DisableReadOnlyToolApproval = true
+        };
         return this;
     }
     
@@ -138,11 +152,15 @@ public class AgentBuilder
                 {
                     AutoApprovalRules = _autoApprovalRules.Any() ? _autoApprovalRules : null
                 },
+                
                 DisableAgentSkillsProvider = true,
                 DisableTodoProvider = true,
                 DisableWebSearch = true,
                 DisableFileMemory = true,
                 DisableAgentModeProvider = true,
+                
+                FileAccessStore = _fileStore,
+                FileAccessProviderOptions = _fileAccessOptions
             }, 
             loggerFactory: _loggerFactory, 
             services: _serviceProvider

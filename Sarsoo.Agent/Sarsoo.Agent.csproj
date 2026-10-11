@@ -9,6 +9,7 @@
     <PropertyGroup>
         <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
         <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+        <IsAotCompatible>true</IsAotCompatible>
         <IsTrimmable>true</IsTrimmable>
         <EnableAotAnalyzer>true</EnableAotAnalyzer>
         <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>

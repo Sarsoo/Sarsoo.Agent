@@ -63,7 +63,7 @@ public class SessionIndex : ISessionIndex, IAsyncDisposable
                 { 
                     await session.DisposeAsync();
                 }
-                catch(Exception e)
+                catch(Exception)
                 {
 
                 }

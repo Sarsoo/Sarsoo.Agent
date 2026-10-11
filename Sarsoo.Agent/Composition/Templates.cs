@@ -21,6 +21,7 @@ public static class Templates
         public AgentSessionContext AsCodingAgent()
             => builder
                 .WithBashShell()
+                .WithFileSystem()
                 .WithAgentsMd()
                 .WithSkills()
                 .Build();
