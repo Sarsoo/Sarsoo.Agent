@@ -50,13 +50,13 @@ public class StatsSideBarView: View
     };
     
     public StatsSideBarView(
-        StatsTables statsTables
+        // StatsTables statsTables
     )
     {
         CanFocus = false;
         BorderStyle = LineStyle.RoundedDotted;
         
-        _tableView.Table = statsTables.Tokens;
+        // _tableView.Table = statsTables.Tokens;
         _tableView.Y = Pos.Bottom(_tokensLabel);
         
         Add(_tokensLabel, _tableView);

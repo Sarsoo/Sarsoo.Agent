@@ -12,7 +12,7 @@ public class AgentInteractiveLifetime(
     IEnumerable<IStateChangeReceiver> stateChangeReceivers,
     IToolGateEnforcer toolGateEnforcer,
     ILogger<AgentInteractiveLifetime> logger
-): BackgroundService
+): IDisposable
 {
     private readonly Channel<ChatMessage> _userMessages = Channel.CreateUnbounded<ChatMessage>();
     private readonly Channel<AgentResponseUpdate> _agentMessages = Channel.CreateUnbounded<AgentResponseUpdate>();
@@ -80,7 +80,7 @@ public class AgentInteractiveLifetime(
         _userMessages.Writer.TryWrite(message);
     }
 
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    public Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Beginning agent lifetime monitor");
         return Task.WhenAll(
@@ -161,10 +161,8 @@ public class AgentInteractiveLifetime(
         }
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
-        base.Dispose();
-        
         try
         {
             if(_userMessages?.Writer.TryComplete() is false)

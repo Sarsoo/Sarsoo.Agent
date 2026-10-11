@@ -17,13 +17,12 @@ public static class ServiceExtensions
         public IServiceCollection AddAgent(IConfiguration configuration)
         {
             services.AddSingleton<OpenAIClientResolver>()
-                .AddSingleton<IChatClient>(sp => sp.GetRequiredService<OpenAIClientResolver>().GetClient())
+                .AddTransient<IChatClient>(sp => sp.GetRequiredService<OpenAIClientResolver>().GetClient())
                 .AddSingleton<IStateChangeReceiver, Herdr>()
                 .AddSingleton<IToolGateEnforcer, ToolGateEnforcer>()
                 .AddSingleton<ISessionIndex, SessionIndex>()
                 
-                .AddSingleton<AgentInteractiveLifetime>()
-                .AddHostedService<AgentInteractiveLifetime>(sp => sp.GetRequiredService<AgentInteractiveLifetime>())
+                .AddTransient<AgentInteractiveLifetime>()
                 
                 .Configure<ToolGateOptions>(configuration.GetSection(ToolGateOptions.Key))
                 .Configure<ProviderOptions>(configuration.GetSection(ProviderOptions.OptionsKey));

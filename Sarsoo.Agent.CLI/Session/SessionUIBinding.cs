@@ -13,11 +13,11 @@ public class SessionUiBinding(
     AgentInteractiveLifetime agentInteractiveLifetime, 
     AgentSessionContext context,
     MessageView messageView,
-    StatsSideBarView sideBarView,
+    // StatsSideBarView sideBarView,
     ILogger<SessionUiBinding> logger
-): BackgroundService
+): IDisposable
 {
-    protected override Task ExecuteAsync(CancellationToken stoppingToken)
+    public Task ExecuteAsync(CancellationToken stoppingToken)
     {
         logger.LogInformation("Initialising UI event bindings");
         
@@ -47,13 +47,11 @@ public class SessionUiBinding(
     
     private void OnUsageStats(object? sender, EventArgs eventArgs)
     {
-        sideBarView.SetNeedsDraw();
+        // sideBarView.SetNeedsDraw();
     }
 
-    public override void Dispose()
+    public void Dispose()
     {
-        base.Dispose();
-        
         agentInteractiveLifetime.UserMessage -= OnUserMessage;
         agentInteractiveLifetime.AgentMessage -= OnAgentMessage;
         agentInteractiveLifetime.Agent?.Stats.Updated -= OnUsageStats;

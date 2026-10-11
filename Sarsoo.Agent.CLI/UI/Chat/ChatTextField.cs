@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.CLI.Session;
 using Sarsoo.Agent.Session.Orchestration;
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Drivers;
 using Terminal.Gui.Editor;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
@@ -10,12 +12,12 @@ namespace Sarsoo.Agent.CLI.UI.Chat;
 
 public class ChatTextField: Editor
 {
-    private readonly AgentInteractiveLifetime _agentSession;
+    private readonly AgentLifecycleManager _sessions;
     private readonly ILogger<ChatTextField> _logger;
 
-    public ChatTextField(AgentInteractiveLifetime agentSession, ILogger<ChatTextField> logger)
+    public ChatTextField(AgentLifecycleManager sessions, ILogger<ChatTextField> logger)
     {
-        _agentSession = agentSession;
+        _sessions = sessions;
         _logger = logger;
         BorderStyle = LineStyle.Single;
         
@@ -24,10 +26,16 @@ public class ChatTextField: Editor
         Multiline = true;
         WordWrap = true;
 
+        Cursor = Cursor with
+        {
+            Style = CursorStyle.BlinkingBar
+        };
+
         // Enter submits the prompt; Shift+Enter (or Alt+Enter where Shift+Enter is not
         // distinguishable by the terminal) inserts a newline.
         KeyBindings.Remove(Key.Enter);
         KeyBindings.Remove(Key.C.WithCtrl);
+        KeyBindings.Remove(Key.Tab);
         KeyBindings.Add(Key.Enter, Command.Accept);
         KeyBindings.Add(Key.Enter.WithShift, Command.NewLine);
         KeyBindings.Add(Key.Enter.WithAlt, Command.NewLine);
@@ -49,7 +57,7 @@ public class ChatTextField: Editor
             _logger.LogInformation("Passing message from UI to agent: {message}", message);
             Text = "";
             
-            _agentSession.PassMessage(message);
+            _sessions.PassMessage(message);
         }
         
         return null;
