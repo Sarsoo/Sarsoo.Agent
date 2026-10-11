@@ -8,5 +8,6 @@ namespace Sarsoo.Agent.Composition;
 public sealed record AgentProfile(
     string Name,
     string Description,
-    Func<AgentBuilder, AgentBuilder> Configure
+    Func<AgentBuilder, AgentBuilder> Configure,
+    bool IncludeAdvisor = false
 );

@@ -5,7 +5,6 @@ using Terminal.Gui.Drivers;
 using Terminal.Gui.Editor;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
-using Terminal.Gui.Views;
 
 namespace Sarsoo.Agent.CLI.UI.Chat;
 
@@ -16,6 +15,9 @@ public class ChatTextField: Editor
 
     public ChatTextField(AgentWorkspace workspace, ILogger<ChatTextField> logger)
     {
+        CanFocus = true;
+        TabStop = TabBehavior.TabStop;
+        
         _workspace = workspace;
         _logger = logger;
         BorderStyle = LineStyle.Single;

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sarsoo.Agent.CLI.UI.Chat.Message;
@@ -49,7 +50,11 @@ public sealed class AgentWorkspace : IAsyncDisposable
 
     public event EventHandler<AgentTab?>? ActiveChanged;
 
-    public AgentTab? Create(string? profile = null, string? name = null, string? systemPrompt = null)
+    public AgentTab? Create(string? profile = null, string? name = null,  
+        string? model = null, 
+        ReasoningEffort? thinkingLevel = null,
+        Action<ChatOptions>? configureOptions = null,
+        string? systemPrompt = null)
     {
         if (_disposed)
         {
@@ -68,7 +73,14 @@ public sealed class AgentWorkspace : IAsyncDisposable
 
         void Build()
         {
-            created = BuildTab(profile, name, systemPrompt);
+            created = BuildTab(
+                profile, 
+                name, 
+                model: model,
+                thinkingLevel: thinkingLevel,
+                configureOptions: configureOptions,
+                systemPrompt: systemPrompt
+            );
         }
 
         if (_app is { } app)
@@ -95,7 +107,13 @@ public sealed class AgentWorkspace : IAsyncDisposable
 
             try
             {
-                Create(definition.Profile, definition.Name, definition.Prompt);
+                Create(
+                    profile: definition.Profile, 
+                    name: definition.Name, 
+                    model: definition.Model,
+                    thinkingLevel: definition.ThinkingLevel,
+                    systemPrompt: definition.Prompt
+                );
             }
             catch (Exception e)
             {
@@ -119,9 +137,21 @@ public sealed class AgentWorkspace : IAsyncDisposable
 
     public void SendToActive(string message) => Active?.Runner.Post(message);
 
-    private AgentTab BuildTab(string profile, string name, string? systemPrompt)
+    private AgentTab BuildTab(string profile, string name, 
+        string? model = null, 
+        ReasoningEffort? thinkingLevel = null,
+        Action<ChatOptions>? configureOptions = null,
+        string? systemPrompt = null
+    )
     {
-        var session = _factory.CreateSession(profile, name, systemPrompt);
+        var session = _factory.CreateSession(
+            profile, 
+            name, 
+            model: model,
+            thinkingLevel: thinkingLevel,
+            configureOptions: configureOptions,
+            systemPrompt: systemPrompt
+        );
         var runner = _factory.CreateRunner(session);
         var messages = new MessageView(_loggerFactory.CreateLogger<MessageView>());
         var stats = new TokenSessionStats(session);

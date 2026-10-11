@@ -1,4 +1,3 @@
-using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Sarsoo.Agent.Client;
@@ -15,31 +14,33 @@ public static class ServiceExtensions
     {
         public IServiceCollection AddAgent(IConfiguration configuration)
         {
-            services.AddSingleton<OpenAIClientResolver>()
+            services
                 .AddSingleton<IStateChangeReceiver, Herdr>()
                 .AddSingleton<IToolGateEnforcer, ToolGateEnforcer>()
 
                 .AddSingleton<AgentProfile>(new AgentProfile(
                     "coding",
                     "Coding agent with shell, filesystem, AGENTS.md and skills.",
-                    builder => builder.AsCodingAgent()))
+                    builder => builder.AsCodingAgent(),
+                    IncludeAdvisor: true))
                 .AddSingleton<IAgentProfileRegistry, AgentProfileRegistry>()
+                .AddSingleton<IAdvisorToolFactory, AdvisorToolFactory>()
                 .AddSingleton<IAgentFactory, AgentFactory>()
-                .AddTransient<Func<IChatClient>>(sp => () => sp.GetRequiredService<IChatClient>())
 
                 .Configure<ToolGateOptions>(configuration.GetSection(ToolGateOptions.Key))
                 .Configure<ProviderOptions>(configuration.GetSection(ProviderOptions.OptionsKey))
-                .Configure<AgentOptions>(configuration.GetSection(AgentOptions.Key));
+                .Configure<AgentOptions>(configuration.GetSection(AgentOptions.Key))
+                .Configure<AdvisorOptions>(configuration.GetSection(AdvisorOptions.Key));
 
             if (configuration.GetValue<bool>("Stubbed"))
             {
-                services.AddSingleton<IChatClient, StubClient>();
+                services.AddSingleton<IClientResolver, StubClientResolver>();
             }
             else
             {
-                services.AddTransient<IChatClient>(sp => sp.GetRequiredService<OpenAIClientResolver>().GetClient());
+                services.AddSingleton<IClientResolver, OpenAIClientResolver>();
             }
-            
+
             return services;
         }
     }

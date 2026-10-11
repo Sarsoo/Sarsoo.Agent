@@ -17,7 +17,7 @@ public sealed class FakeChatClient : IChatClient
         ChatOptions? options = null,
         CancellationToken cancellationToken = default
     )
-        => Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "ok")));
+        => Task.FromResult(new ChatResponse(new ChatMessage(ChatRole.Assistant, "fake-response")));
 
     public async IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
         IEnumerable<ChatMessage> messages,

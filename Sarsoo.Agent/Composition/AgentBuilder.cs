@@ -124,7 +124,11 @@ public class AgentBuilder
         return this;
     }
     
-    public AgentSessionContext Build(string name)
+    /// <summary>
+    ///     Builds the underlying <see cref="AIAgent"/> without wrapping it in a session context. Used
+    ///     for sub-agents (such as the advisor) that are embedded rather than run as a tab.
+    /// </summary>
+    public AIAgent BuildAgent()
     {
         string? systemPrompt = null;
 
@@ -140,7 +144,7 @@ public class AgentBuilder
             systemPrompt = builder.ToString();
         }
         
-        var agent = _client.AsHarnessAgent(options: new()
+        return _client.AsHarnessAgent(options: new()
             {
                 HarnessInstructions = systemPrompt,
                 AIContextProviders = _contextProviders.Any() ? _contextProviders : null,
@@ -165,8 +169,11 @@ public class AgentBuilder
             loggerFactory: _loggerFactory, 
             services: _serviceProvider
         );
+    }
 
-        var context = new AgentSessionContext(agent, name);
+    public AgentSessionContext Build(string name)
+    {
+        var context = new AgentSessionContext(BuildAgent(), name);
         context.AddDisposableRange(_contextProviders);
         context.AddDisposableRange(_tools);
         

@@ -4,5 +4,9 @@ namespace Sarsoo.Agent.Client;
 
 public interface IClientResolver
 {
-    IChatClient GetClient(Action<ChatOptions>? configureOptions = null);
+    IChatClient GetClient(
+        string? model = null,
+        ReasoningEffort? thinkingLevel = null,
+        Action<ChatOptions>? configureOptions = null
+    );
 }

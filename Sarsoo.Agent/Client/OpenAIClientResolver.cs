@@ -11,7 +11,11 @@ namespace Sarsoo.Agent.Client;
 
 public class OpenAIClientResolver(IOptions<ProviderOptions> options) : IClientResolver
 {
-    public IChatClient GetClient(Action<ChatOptions>? configureOptions = null)
+    public IChatClient GetClient(
+        string? model = null,
+        ReasoningEffort? thinkingLevel = null,
+        Action<ChatOptions>? configureOptions = null
+    )
     {
         var sessionId = Guid.NewGuid().ToString();
         var creds = new ApiKeyCredential(options.Value.Key!);
@@ -24,7 +28,7 @@ public class OpenAIClientResolver(IOptions<ProviderOptions> options) : IClientRe
         chatOptions.AddPolicy(new UserAgentPolicy(), PipelinePosition.PerCall);
 
         var providerClient = new OpenAIClient(creds, chatOptions)
-            .GetChatClient(options.Value.Model!)
+            .GetChatClient(model ?? options.Value.Model!)
             .AsIChatClient()
             .AsBuilder()
             .ConfigureOptions(o =>
@@ -40,6 +44,11 @@ public class OpenAIClientResolver(IOptions<ProviderOptions> options) : IClientRe
                         }   
                     }
                 };
+
+                if (thinkingLevel is { } effort)
+                {
+                    o.Reasoning = new ReasoningOptions { Effort = effort };
+                }
                 
                 configureOptions?.Invoke(o);
             });

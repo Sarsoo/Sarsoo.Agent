@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.Gate;
 using Sarsoo.Agent.Integrations;
@@ -30,10 +31,15 @@ internal static class TestAgents
             Array.Empty<IToolGate>(),
             NullLogger<ToolGateEnforcer>.Instance);
 
+        var clientResolver = new FakeClientResolver();
+        var advisorOptions = Microsoft.Extensions.Options.Options.Create(new AdvisorOptions { Enabled = false });
+
         return new AgentFactory(
             services,
-            () => new FakeChatClient(),
+            clientResolver,
             profiles,
+            new AdvisorToolFactory(clientResolver, advisorOptions, NullLoggerFactory.Instance, services),
+            advisorOptions,
             gate,
             receivers ?? Array.Empty<IStateChangeReceiver>(),
             NullLoggerFactory.Instance);
@@ -45,6 +51,16 @@ internal static class TestAgents
             Microsoft.Extensions.Options.Options.Create(new AgentOptions { DefaultProfile = "test" }),
             NullLoggerFactory.Instance,
             NullLogger<AgentWorkspace>.Instance);
+}
+
+internal sealed class FakeClientResolver(Func<IChatClient>? factory = null) : IClientResolver
+{
+    public IChatClient GetClient(
+        string? model = null,
+        ReasoningEffort? thinkingLevel = null,
+        Action<ChatOptions>? configureOptions = null
+    )
+        => factory?.Invoke() ?? new FakeChatClient();
 }
 
 internal sealed class RecordingReceiver : IStateChangeReceiver
