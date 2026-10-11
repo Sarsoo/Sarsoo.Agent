@@ -22,6 +22,7 @@ public class ChatView: View
         messageView.Width = Dim.Fill();
         
         textField.Width = Dim.Fill();
+        textField.Height = 5;
         textField.Y = Pos.AnchorEnd();
         
         Add(messageView, textField);

@@ -1,16 +1,14 @@
 using Microsoft.Extensions.Logging;
-using Sarsoo.Agent.CLI.Session;
-using Sarsoo.Agent.CLI.UI.Chat.Tool;
 using Sarsoo.Agent.Session.Orchestration;
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Editor;
 using Terminal.Gui.Input;
-using Terminal.Gui.Resources;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
 namespace Sarsoo.Agent.CLI.UI.Chat;
 
-public class ChatTextField: TextField
+public class ChatTextField: Editor
 {
     private readonly AgentInteractiveLifetime _agentSession;
     private readonly ILogger<ChatTextField> _logger;
@@ -21,19 +19,36 @@ public class ChatTextField: TextField
         _logger = logger;
         BorderStyle = LineStyle.Single;
         
-        KeyBindings.ReplaceCommands(Key.Enter, Command.Accept);
-        
-        AddCommand (Command.Accept, OnEnter);
+        ViewportSettings |= ViewportSettingsFlags.HasVerticalScrollBar;
+
+        Multiline = true;
+        WordWrap = true;
+
+        // Enter submits the prompt; Shift+Enter (or Alt+Enter where Shift+Enter is not
+        // distinguishable by the terminal) inserts a newline.
+        KeyBindings.Remove(Key.Enter);
+        KeyBindings.Remove(Key.C.WithCtrl);
+        KeyBindings.Add(Key.Enter, Command.Accept);
+        KeyBindings.Add(Key.Enter.WithShift, Command.NewLine);
+        KeyBindings.Add(Key.Enter.WithAlt, Command.NewLine);
+
+        AddCommand(Command.Accept, OnEnter);
+
+        // DI builds this singleton on the host thread, but TuiService runs the app on its own
+        // thread. TextDocument captures its owner thread at construction, so release ownership
+        // here (while we still are that thread) and let the first UI-thread access claim it.
+        Document?.SetOwnerThread(null);
     }
 
     private bool? OnEnter()
     {
-        var message = Value;
+        var message = Text;
 
         if (!string.IsNullOrWhiteSpace(message))
         {
             _logger.LogInformation("Passing message from UI to agent: {message}", message);
-            Value = "";
+            Text = "";
+            
             _agentSession.PassMessage(message);
         }
         
