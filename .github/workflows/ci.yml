@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build Container
     needs: [build] # for ignoring bad builds
-    if: gitea.event_name == 'push' && (gitea.ref == 'refs/heads/main' || startsWith(gitea.ref, 'refs/tags/'))
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
     
     steps:
       - uses: actions/checkout@v6
