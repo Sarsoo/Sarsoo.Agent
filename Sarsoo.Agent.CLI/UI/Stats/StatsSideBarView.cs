@@ -33,17 +33,17 @@ public class StatsSideBarView: View
             
             ShowVerticalCellLineForFirstColumn = false,
             ShowVerticalCellLineForLastColumn = false,
-            ExpandLastColumn = false,
+            ExpandLastColumn = true,
             
             ColumnStyles = new Dictionary<int, ColumnStyle>
             {
                 {0, new ColumnStyle()
                 {
-                    Alignment = Alignment.End,
+                    Alignment = Alignment.Start,
                 }},
                 {1, new ColumnStyle()
                 {
-                    Alignment = Alignment.Start
+                    Alignment = Alignment.End
                 }}
             }
         }
@@ -57,8 +57,8 @@ public class StatsSideBarView: View
         BorderStyle = LineStyle.RoundedDotted;
         
         _tableView.Table = statsTables.Tokens;
-
         _tableView.Y = Pos.Bottom(_tokensLabel);
+        
         Add(_tokensLabel, _tableView);
     }
 }

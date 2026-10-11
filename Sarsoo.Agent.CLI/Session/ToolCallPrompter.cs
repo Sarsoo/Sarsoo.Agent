@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.UI.Chat.Tool;
 using Sarsoo.Agent.Gate;
 using Terminal.Gui.App;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -23,8 +24,9 @@ public class ToolCallPrompter(IApplication app, ILogger<ToolCallPrompter> logger
                 beginInitHandler: (o) =>
                 {
                     o.Text = "Tool Request";
-                    o.Height = Dim.Absolute(15);
-                    o.Width = Dim.Absolute(75);
+                    o.Height = Dim.Percent(80);
+                    o.Width = Dim.Percent(80);
+                    o.BorderStyle = LineStyle.Rounded;
                     
                     o.GetWrappedView().SetTool(request);
                 });

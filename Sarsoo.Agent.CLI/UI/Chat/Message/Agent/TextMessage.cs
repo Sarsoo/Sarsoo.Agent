@@ -21,6 +21,12 @@ public class TextMessage: AgentMessage<TextContent>
         Text = string.Empty;
         BorderStyle = LineStyle.Single;
 
+        // The constructor receives the first streamed chunk (MessageView creates the
+        // message from it rather than calling SetContent), so seed the accumulator here.
+        // Otherwise the first chunk is lost when the next chunk overwrites Markdown.Text.
+        _totalMessage = content.ToString() ?? string.Empty;
+        Markdown.Text = _totalMessage;
+
         Markdown.ViewportSettings &= ~ViewportSettingsFlags.HasVerticalScrollBar;
         Markdown.ContentSizeChanged += (sender, args) =>
         {

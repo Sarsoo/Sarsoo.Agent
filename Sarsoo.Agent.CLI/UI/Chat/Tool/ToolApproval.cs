@@ -17,7 +17,7 @@ public class ToolApproval: View
         TextAlignment = Alignment.Center,
         Width = Dim.Fill(),
         Height = Dim.Auto(),
-        BorderStyle = LineStyle.Rounded
+        BorderStyle = LineStyle.RoundedDashed
     };
     
     private readonly CheckBox _approval = new()
