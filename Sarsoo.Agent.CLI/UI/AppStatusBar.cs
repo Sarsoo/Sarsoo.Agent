@@ -1,3 +1,4 @@
+using Sarsoo.Agent.CLI.Session;
 using Sarsoo.Agent.Session;
 using Sarsoo.Agent.Session.Orchestration;
 using Terminal.Gui.ViewBase;
@@ -7,17 +8,18 @@ namespace Sarsoo.Agent.CLI.UI;
 
 public class AppStatusBar: StatusBar
 {
-    private readonly AgentInteractiveLifetime _agentSessionLifetime;
-
+    private readonly AgentWorkspace _workspace;
     private readonly Label _agentState = new()
     {
         Text = "Idle",
         CanFocus = false,
     };
-    
-    public AppStatusBar(AgentInteractiveLifetime agentSessionLifetime)
+
+    private AgentSessionRunner? _subscribed;
+
+    public AppStatusBar(AgentWorkspace workspace)
     {
-        _agentSessionLifetime = agentSessionLifetime;
+        _workspace = workspace;
         Width = Dim.Fill();
         // Height = Dim.Absolute(3);
         Y = Pos.AnchorEnd();
@@ -25,17 +27,43 @@ public class AppStatusBar: StatusBar
         SchemeName = "StatusBarIdle";
         
         Add(_agentState);
-        
-        _agentSessionLifetime.StateChanged += OnStateChanged;
+
+        _workspace.ActiveChanged += OnActiveChanged;
+        OnActiveChanged(this, _workspace.Active);
 
         // Colours come from the active theme's Menu scheme (StatusBar defaults to Schemes.Menu).
     }
 
     protected override void Dispose(bool disposing)
     {
-        _agentSessionLifetime.StateChanged -= OnStateChanged;
+        if (disposing)
+        {
+            _workspace.ActiveChanged -= OnActiveChanged;
+
+            if (_subscribed is { } subscribed)
+            {
+                subscribed.StateChanged -= OnStateChanged;
+            }
+        }
         
         base.Dispose(disposing);
+    }
+
+    private void OnActiveChanged(object? sender, AgentTab? tab)
+    {
+        if (_subscribed is { } previous)
+        {
+            previous.StateChanged -= OnStateChanged;
+        }
+
+        _subscribed = tab?.Runner;
+
+        if (_subscribed is { } current)
+        {
+            current.StateChanged += OnStateChanged;
+        }
+
+        OnStateChanged(this, _subscribed?.State ?? AgentState.Idle);
     }
 
     private void OnStateChanged(object? sender, AgentState e)
@@ -49,6 +77,7 @@ public class AppStatusBar: StatusBar
         _agentState.Text = e switch
         {
             AgentState.Busy => "Working...",
+            AgentState.Blocked => "Blocked",
             AgentState.Idle or _ => "Idle",
         };
         

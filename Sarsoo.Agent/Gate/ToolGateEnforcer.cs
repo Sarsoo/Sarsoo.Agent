@@ -9,7 +9,7 @@ namespace Sarsoo.Agent.Gate;
 
 public interface IToolGateEnforcer
 {
-    Task<ToolApprovalResponseContent> Request(ToolApprovalRequestContent request, CancellationToken cancel = default);
+    Task<ToolApprovalResponseContent> Request(ToolApprovalRequestContent request, string agentId, CancellationToken cancel = default);
 }
 
 public class ToolGateEnforcer(
@@ -18,7 +18,7 @@ public class ToolGateEnforcer(
     ILogger<ToolGateEnforcer> logger
 ) : IToolGateEnforcer
 {
-    public async Task<ToolApprovalResponseContent> Request(ToolApprovalRequestContent request, CancellationToken cancel = default)
+    public async Task<ToolApprovalResponseContent> Request(ToolApprovalRequestContent request, string agentId, CancellationToken cancel = default)
     {
         logger.LogInformation("Tool approval required ({call_id}): {tool_request}", request.ToolCall.CallId, request);
         
@@ -28,7 +28,7 @@ public class ToolGateEnforcer(
         foreach (var policy in policies)
         {
             logger.LogInformation("Requesting tool approval from policy {policy}", policy.GetType().Name);
-            results.Add(await policy.Request(request, cancel).ConfigureAwait(false));
+            results.Add(await policy.Request(request, agentId, cancel).ConfigureAwait(false));
         }
 
         if (options.Value.PolicyRule == ToolGatePolicyRules.All)

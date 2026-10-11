@@ -124,7 +124,7 @@ public class AgentBuilder
         return this;
     }
     
-    public AgentSessionContext Build()
+    public AgentSessionContext Build(string name)
     {
         string? systemPrompt = null;
 
@@ -166,7 +166,7 @@ public class AgentBuilder
             services: _serviceProvider
         );
 
-        var context = new AgentSessionContext(agent);
+        var context = new AgentSessionContext(agent, name);
         context.AddDisposableRange(_contextProviders);
         context.AddDisposableRange(_tools);
         

@@ -32,7 +32,6 @@ public static class ServiceExtensions
                 
                 .AddSingleton<ChatView>()
                 .AddSingleton<StatsSideBarView>()
-                // .AddSingleton<MessageView>()
                 .AddSingleton<ChatTextField>();
             
             return serviceCollection;
@@ -41,15 +40,8 @@ public static class ServiceExtensions
         public IServiceCollection AddAgentSessions(IConfiguration configuration)
         {
             serviceCollection.AddAgent(configuration)
-                .AddSingleton<AgentLifecycleManager>()
-                .AddHostedService<AgentLifecycleManager>(sp => sp.GetRequiredService<AgentLifecycleManager>());
-                // .AddSingleton<AgentSessionContext>(sp => 
-                //     sp.GetRequiredService<IChatClient>()
-                //         .AsCodingAgent(serviceProvider: sp)
-                // )
-                // .AddSingleton<SessionUiBinding>()
-                // .AddHostedService<SessionUiBinding>(sp => sp.GetRequiredService<SessionUiBinding>());
-            
+                .AddSingleton<AgentWorkspace>();
+
             return serviceCollection;
         }
     }

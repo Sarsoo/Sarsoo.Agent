@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Session;
-using Sarsoo.Agent.Session.Orchestration;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Editor;
@@ -12,12 +11,12 @@ namespace Sarsoo.Agent.CLI.UI.Chat;
 
 public class ChatTextField: Editor
 {
-    private readonly AgentLifecycleManager _sessions;
+    private readonly AgentWorkspace _workspace;
     private readonly ILogger<ChatTextField> _logger;
 
-    public ChatTextField(AgentLifecycleManager sessions, ILogger<ChatTextField> logger)
+    public ChatTextField(AgentWorkspace workspace, ILogger<ChatTextField> logger)
     {
-        _sessions = sessions;
+        _workspace = workspace;
         _logger = logger;
         BorderStyle = LineStyle.Single;
         
@@ -57,7 +56,7 @@ public class ChatTextField: Editor
             _logger.LogInformation("Passing message from UI to agent: {message}", message);
             Text = "";
             
-            _sessions.PassMessage(message);
+            _workspace.SendToActive(message);
         }
         
         return null;

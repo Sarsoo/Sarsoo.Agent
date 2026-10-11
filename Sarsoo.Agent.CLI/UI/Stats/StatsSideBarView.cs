@@ -1,6 +1,4 @@
 using Sarsoo.Agent.CLI.Session;
-using Sarsoo.Agent.Session;
-using Terminal.Gui.Configuration;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -18,7 +16,7 @@ public class StatsSideBarView: View
         Height = Dim.Auto(),
     };
 
-    private TableView _tableView = new()
+    private readonly TableView _tableView = new()
     {
         Width = Dim.Fill(),
         Height = Dim.Auto(),
@@ -48,17 +46,38 @@ public class StatsSideBarView: View
             }
         }
     };
+
+    private readonly AgentWorkspace _workspace;
     
-    public StatsSideBarView(
-        // StatsTables statsTables
-    )
+    public StatsSideBarView(AgentWorkspace workspace)
     {
+        _workspace = workspace;
         CanFocus = false;
         BorderStyle = LineStyle.RoundedDotted;
         
-        // _tableView.Table = statsTables.Tokens;
         _tableView.Y = Pos.Bottom(_tokensLabel);
         
         Add(_tokensLabel, _tableView);
+
+        _workspace.ActiveChanged += OnActiveChanged;
+        OnActiveChanged(this, _workspace.Active);
+    }
+
+    public void Bind(TokenSessionStats? stats)
+    {
+        _tableView.Table = stats;
+        _tableView.SetNeedsDraw();
+    }
+
+    private void OnActiveChanged(object? sender, AgentTab? tab) => Bind(tab?.Stats);
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _workspace.ActiveChanged -= OnActiveChanged;
+        }
+        
+        base.Dispose(disposing);
     }
 }

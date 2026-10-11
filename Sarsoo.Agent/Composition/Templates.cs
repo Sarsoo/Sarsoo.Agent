@@ -9,21 +9,22 @@ public static class Templates
     extension(IChatClient client)
     {
         public AgentSessionContext AsCodingAgent(
+            string name,
             ILoggerFactory? loggerFactory = null,
             IServiceProvider? serviceProvider = null
         )
             => new AgentBuilder(client, loggerFactory, serviceProvider)
-                .AsCodingAgent();
+                .AsCodingAgent()
+                .Build(name);
     }
     
     extension(AgentBuilder builder)
     {
-        public AgentSessionContext AsCodingAgent()
+        public AgentBuilder AsCodingAgent()
             => builder
                 .WithBashShell()
                 .WithFileSystem()
                 .WithAgentsMd()
-                .WithSkills()
-                .Build();
+                .WithSkills();
     }
 }

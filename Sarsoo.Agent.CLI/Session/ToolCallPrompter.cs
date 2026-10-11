@@ -11,31 +11,52 @@ namespace Sarsoo.Agent.CLI.Session;
 
 public class ToolCallPrompter(IApplication app, ILogger<ToolCallPrompter> logger): IToolGate
 {
-    public async Task<ToolGateResponse> Request(ToolApprovalRequestContent request, CancellationToken cancel = default)
+    public async Task<ToolGateResponse> Request(ToolApprovalRequestContent request, string agentId, CancellationToken cancel = default)
     {
-        await Task.Yield();
-        var waiter = new ManualResetEvent(false);
-        logger.LogInformation("Requesting interactive tool call approval from user");
-        (bool, string?)? resp = null;
-        app?.Invoke((a) =>
+        var completion = new TaskCompletionSource<(bool, string?)?>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Prompt<ToolApproval, (bool, string?)?>? prompt = null;
+
+        logger.LogInformation("Requesting interactive tool call approval from user for agent {agent}", agentId);
+
+        using var registration = cancel.Register(() =>
         {
-            resp = a?.TopRunnable?.Prompt<ToolApproval, (bool, string?)?>(
-                resultExtractor: (o) => o.Value,
-                beginInitHandler: (o) =>
+            app.Invoke(_ => prompt?.RequestStop());
+            completion.TrySetResult(null);
+        });
+
+        app.Invoke(a =>
+        {
+            if (cancel.IsCancellationRequested)
+            {
+                completion.TrySetResult(null);
+                return;
+            }
+
+            var result = a.TopRunnable?.Prompt<ToolApproval, (bool, string?)?>(
+                resultExtractor: o => o.Value,
+                beginInitHandler: o =>
                 {
-                    o.Text = "Tool Request";
+                    prompt = o;
+                    o.Title = $"Tool Request - {agentId}";
                     o.Height = Dim.Percent(80);
                     o.Width = Dim.Percent(80);
                     o.BorderStyle = LineStyle.Rounded;
-                    
+
                     o.GetWrappedView().SetTool(request);
                 });
-            waiter.Set();
+
+            completion.TrySetResult(result);
         });
-        
-        waiter.WaitOne();
-        
-        logger.LogInformation("Requesting interactive tool call approval from user"); 
-        return new ToolGateResponse(resp?.Item1 ?? false, resp?.Item2);
+
+        var response = await completion.Task.ConfigureAwait(false);
+
+        if (response is null)
+        {
+            logger.LogInformation("Tool call approval for agent {agent} was cancelled", agentId);
+            return new ToolGateResponse(false, "Cancelled");
+        }
+
+        logger.LogInformation("Tool call approval for agent {agent} resolved: {allowed}", agentId, response.Value.Item1);
+        return new ToolGateResponse(response.Value.Item1, response.Value.Item2);
     }
 }

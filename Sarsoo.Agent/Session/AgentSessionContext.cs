@@ -3,9 +3,10 @@ using Sarsoo.Agent.Session.Stats;
 
 namespace Sarsoo.Agent.Session;
 
-public class AgentSessionContext(AIAgent agent): IAsyncDisposable
+public class AgentSessionContext(AIAgent agent, string name): IAsyncDisposable
 {
     public string Id => Agent.Id;
+    public string Name { get; } = name;
     public AIAgent Agent { get; } = agent;
     public AgentSession? Session { get; private set; }
     public SessionStats Stats { get; } = new();

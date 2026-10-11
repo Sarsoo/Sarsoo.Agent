@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.CLI.Session;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Input;
@@ -11,6 +12,7 @@ public class TuiService(
     IApplication app, 
     MainWindow mainWindow, 
     IHostApplicationLifetime lifetime, 
+    AgentWorkspace workspace,
     ILogger<TuiService> logger, 
     ILogger<IApplication> tuiLogger
 ): IHostedService
@@ -48,7 +50,9 @@ public class TuiService(
             
             app.Keyboard.KeyBindings.Remove(Key.Esc);
             app.Keyboard.KeyBindings.Add(Key.C.WithCtrl, Command.Quit);
-            
+
+            workspace.LaunchConfigured();
+
             app.Run(mainWindow);
 
             logger.LogInformation("TUI Session Ended");

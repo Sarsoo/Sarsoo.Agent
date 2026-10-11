@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.Extensions;
@@ -15,14 +16,16 @@ public class Herdr(ILogger<Herdr> logger) : IStateChangeReceiver
     public string? PaneId => Environment.GetEnvironmentVariable(HERDR_PANE_ID);
     public string? HerdrExe => Environment.GetEnvironmentVariable(HERDR_BIN_PATH);
 
-    private int _seqId = 0;
+    private readonly ConcurrentDictionary<string, int> _seqIds = new();
 
-    public async Task StateChanged(AgentState state, CancellationToken token = default)
+    public async Task StateChanged(string agentId, AgentState state, CancellationToken token = default)
     {
         if (InHerdr)
         {
+            var seqId = _seqIds.AddOrUpdate(agentId, 0, (_, current) => current + 1);
+
             await RunHerdrCommand(
-                $"""pane report-agent "{PaneId}" --source "reeve" --agent "reeve" --state "{state.HerdrState}" --seq "{_seqId++}" """, 
+                $"""pane report-agent "{PaneId}" --source "reeve" --agent "{agentId}" --state "{state.HerdrState}" --seq "{seqId}" """, 
                 token
                 )
                 .ConfigureAwait(false);
