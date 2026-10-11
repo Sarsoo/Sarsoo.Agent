@@ -1,7 +1,9 @@
+using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Sarsoo.Agent.Advisor;
 using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.Gate;
@@ -27,14 +29,19 @@ internal sealed class RecordingClientResolver : IClientResolver
     }
 }
 
-internal sealed class RecordingAdvisorToolFactory : IAdvisorToolFactory
+internal sealed class RecordingAdvisorToolFactory : IAdvisorFactory
 {
     public int CreateCount { get; private set; }
 
-    public AIFunction Create()
+    public AIFunction CreateTool()
     {
         CreateCount++;
         return AIFunctionFactory.Create(() => "advice", new AIFunctionFactoryOptions { Name = "consult_advisor" });
+    }
+
+    public AIContextProvider CreateContext()
+    {
+        return new AdvisorContextProvider(new());
     }
 }
 
@@ -43,7 +50,7 @@ public class AdvisorToolFactoryTests
     [Fact]
     public void Create_UsesConfiguredModelThinkingLevelAndToolMetadata()
     {
-        var services = new ServiceCollection().BuildServiceProvider();
+        var services = new ServiceCollection().AddTransient<IAdvisorFactory, RecordingAdvisorToolFactory>().BuildServiceProvider();
         var resolver = new RecordingClientResolver();
         var options = Microsoft.Extensions.Options.Options.Create(new AdvisorOptions
         {
@@ -53,8 +60,8 @@ public class AdvisorToolFactoryTests
             ToolDescription = "custom description"
         });
 
-        var factory = new AdvisorToolFactory(resolver, options, NullLoggerFactory.Instance, services);
-        var tool = factory.Create();
+        var factory = new AdvisorFactory(resolver, options, NullLoggerFactory.Instance, services);
+        var tool = factory.CreateTool();
 
         Assert.Equal("advisor-model", resolver.Model);
         Assert.Equal(ReasoningEffort.High, resolver.ThinkingLevel);
@@ -65,11 +72,11 @@ public class AdvisorToolFactoryTests
     [Fact]
     public async Task Create_InvokesAdvisorAgentAsTool()
     {
-        var services = new ServiceCollection().BuildServiceProvider();
+        var services = new ServiceCollection().AddTransient<IAdvisorFactory, RecordingAdvisorToolFactory>().BuildServiceProvider();
         var options = Microsoft.Extensions.Options.Options.Create(new AdvisorOptions());
 
-        var factory = new AdvisorToolFactory(new FakeClientResolver(), options, NullLoggerFactory.Instance, services);
-        var tool = factory.Create();
+        var factory = new AdvisorFactory(new FakeClientResolver(), options, NullLoggerFactory.Instance, services);
+        var tool = factory.CreateTool();
 
         var result = await tool.InvokeAsync(
             new AIFunctionArguments { ["query"] = "What should I do?" },
@@ -92,6 +99,7 @@ public class AdvisorToolFactoryTests
             .Build();
 
         var services = new ServiceCollection();
+        services.AddTransient<IAdvisorFactory, RecordingAdvisorToolFactory>();
         services.Configure<AdvisorOptions>(configuration.GetSection(AdvisorOptions.Key));
 
         var options = services.BuildServiceProvider()
@@ -107,12 +115,12 @@ public class AdvisorToolFactoryTests
     [Fact]
     public void Create_FallsBackToDefaults()
     {
-        var services = new ServiceCollection().BuildServiceProvider();
+        var services = new ServiceCollection().AddTransient<IAdvisorFactory, RecordingAdvisorToolFactory>().BuildServiceProvider();
         var resolver = new RecordingClientResolver();
         var options = Microsoft.Extensions.Options.Options.Create(new AdvisorOptions());
 
-        var factory = new AdvisorToolFactory(resolver, options, NullLoggerFactory.Instance, services);
-        var tool = factory.Create();
+        var factory = new AdvisorFactory(resolver, options, NullLoggerFactory.Instance, services);
+        var tool = factory.CreateTool();
 
         Assert.Null(resolver.Model);
         Assert.Null(resolver.ThinkingLevel);
@@ -125,11 +133,10 @@ public class AgentFactoryAdvisorTests
 {
     private static AgentFactory CreateFactory(
         AgentProfile profile,
-        IAdvisorToolFactory advisorFactory,
         AdvisorOptions advisorOptions
     )
     {
-        var services = new ServiceCollection().BuildServiceProvider();
+        var services = new ServiceCollection().AddTransient<IAdvisorFactory, RecordingAdvisorToolFactory>().BuildServiceProvider();
 
         var gate = new ToolGateEnforcer(
             Microsoft.Extensions.Options.Options.Create(new ToolGateOptions()),
@@ -140,7 +147,6 @@ public class AgentFactoryAdvisorTests
             services,
             new FakeClientResolver(),
             new AgentProfileRegistry([profile]),
-            advisorFactory,
             Microsoft.Extensions.Options.Options.Create(advisorOptions),
             gate,
             Array.Empty<IStateChangeReceiver>(),
@@ -153,7 +159,6 @@ public class AgentFactoryAdvisorTests
         var advisor = new RecordingAdvisorToolFactory();
         var factory = CreateFactory(
             new AgentProfile("with-advisor", "d", builder => builder, IncludeAdvisor: true),
-            advisor,
             new AdvisorOptions());
 
         factory.CreateSession("with-advisor", "alpha");
@@ -167,7 +172,6 @@ public class AgentFactoryAdvisorTests
         var advisor = new RecordingAdvisorToolFactory();
         var factory = CreateFactory(
             new AgentProfile("no-advisor", "d", builder => builder),
-            advisor,
             new AdvisorOptions());
 
         factory.CreateSession("no-advisor", "alpha");
@@ -181,7 +185,6 @@ public class AgentFactoryAdvisorTests
         var advisor = new RecordingAdvisorToolFactory();
         var factory = CreateFactory(
             new AgentProfile("with-advisor", "d", builder => builder, IncludeAdvisor: true),
-            advisor,
             new AdvisorOptions { Enabled = false });
 
         factory.CreateSession("with-advisor", "alpha");

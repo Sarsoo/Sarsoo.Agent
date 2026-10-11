@@ -4,6 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Sarsoo.Agent.Advisor;
 using Sarsoo.Agent.CLI.Session;
 using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Composition;
@@ -19,7 +20,7 @@ internal static class TestAgents
 {
     public static IAgentFactory CreateFactory(IEnumerable<IStateChangeReceiver>? receivers = null)
     {
-        var services = new ServiceCollection().BuildServiceProvider();
+        var services = new ServiceCollection().AddTransient<IAdvisorFactory, AdvisorFactory>().BuildServiceProvider();
 
         var profiles = new AgentProfileRegistry(
         [
@@ -38,7 +39,6 @@ internal static class TestAgents
             services,
             clientResolver,
             profiles,
-            new AdvisorToolFactory(clientResolver, advisorOptions, NullLoggerFactory.Instance, services),
             advisorOptions,
             gate,
             receivers ?? Array.Empty<IStateChangeReceiver>(),

@@ -1,6 +1,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sarsoo.Agent.Advisor;
 using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Gate;
 using Sarsoo.Agent.Integrations;
@@ -26,7 +27,6 @@ public sealed class AgentFactory(
     IServiceProvider serviceProvider,
     IClientResolver clientResolver,
     IAgentProfileRegistry profiles,
-    IAdvisorToolFactory advisorToolFactory,
     IOptions<AdvisorOptions> advisorOptions,
     IToolGateEnforcer toolGateEnforcer,
     IEnumerable<IStateChangeReceiver> stateChangeReceivers,
@@ -54,7 +54,7 @@ public sealed class AgentFactory(
 
         if (profile.IncludeAdvisor && advisorOptions.Value.Enabled)
         {
-            builder = builder.WithFunction(advisorToolFactory.Create());
+            builder = builder.WithAdvisor();
         }
 
         return builder.Build(name);

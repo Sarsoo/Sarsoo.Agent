@@ -4,6 +4,7 @@ using Microsoft.Agents.AI.Tools.Shell;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.Advisor;
 using Sarsoo.Agent.Context;
 using Sarsoo.Agent.Session;
 #pragma warning disable MAAI001
@@ -105,13 +106,13 @@ public class AgentBuilder
         {
             _contextProviders.Add(new ShellEnvironmentProvider(shell, new()
             {
-                ProbeTools = ["git", "dotnet", "node", "python", "python3", "docker", "podman"],
+                ProbeTools = ["git", "dotnet", "node", "python3", "docker", "podman"],
                 OverrideFamily = ShellFamily.Posix
             }));
         }
         
         return WithFunction(shell.AsAIFunction(
-                name: "bash", 
+                name: "bash",
                 description: "Run a bash command", 
                 requireApproval: requireApproval
             )
@@ -121,6 +122,22 @@ public class AgentBuilder
     public AgentBuilder WithFunction(AIFunction func)
     {
         _tools.Add(func);
+        return this;
+    }
+
+    public AgentBuilder WithAdvisor()
+    {
+        if (_serviceProvider is not null)
+        {
+            var advisorFactory = _serviceProvider.GetRequiredService<IAdvisorFactory>();
+            _tools.Add(advisorFactory.CreateTool());
+            _contextProviders.Add(advisorFactory.CreateContext());
+        }
+        else
+        {
+            throw new InvalidOperationException("Service provider not provided to resolve Advisor resources");
+        }
+        
         return this;
     }
     

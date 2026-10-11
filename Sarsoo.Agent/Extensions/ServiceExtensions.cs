@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Sarsoo.Agent.Advisor;
 using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.Gate;
@@ -24,7 +25,7 @@ public static class ServiceExtensions
                     builder => builder.AsCodingAgent(),
                     IncludeAdvisor: true))
                 .AddSingleton<IAgentProfileRegistry, AgentProfileRegistry>()
-                .AddSingleton<IAdvisorToolFactory, AdvisorToolFactory>()
+                .AddTransient<IAdvisorFactory, AdvisorFactory>()
                 .AddSingleton<IAgentFactory, AgentFactory>()
 
                 .Configure<ToolGateOptions>(configuration.GetSection(ToolGateOptions.Key))
