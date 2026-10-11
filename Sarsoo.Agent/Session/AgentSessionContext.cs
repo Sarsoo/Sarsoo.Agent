@@ -12,14 +12,40 @@ public class AgentSessionContext(AIAgent agent): IAsyncDisposable
     
     private readonly List<IDisposable> _disposables = new();
     private readonly List<IAsyncDisposable> _asyncDisposables = new();
+    
+    private readonly SemaphoreSlim _sessionLock = new(1);
+    
+    public async Task<bool> TryInitSession(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _sessionLock.WaitAsync(cancellationToken);
+            try
+            {
+                if (Session is null)
+                {
+                    Session = await Agent.CreateSessionAsync(cancellationToken).ConfigureAwait(false);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            finally
+            {
+                _sessionLock.Release();
+            }
+        }
+        catch (OperationCanceledException e)
+        {
+            return false;
+        }
+    }
 
     public async Task InitSession(CancellationToken cancellationToken = default)
     {
-        if (Session is null)
-        {
-            Session = await Agent.CreateSessionAsync(cancellationToken).ConfigureAwait(false);
-        }
-        else
+        if (!await TryInitSession(cancellationToken))
         {
             throw new InvalidOperationException("Session is already initialised");
         }
@@ -50,12 +76,26 @@ public class AgentSessionContext(AIAgent agent): IAsyncDisposable
     {
         foreach(var disposable in _disposables)
         {
-            disposable.Dispose();
+            try
+            {
+                disposable.Dispose();
+            }
+            catch (Exception e)
+            {
+                
+            }
         }
 
         foreach(var disposable in _asyncDisposables)
         {
-            await disposable.DisposeAsync().ConfigureAwait(false);
+            try
+            {
+                await disposable.DisposeAsync().ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                
+            }
         }
     }
 }

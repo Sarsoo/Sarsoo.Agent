@@ -16,8 +16,8 @@ public static class ServiceExtensions
     {
         public IServiceCollection AddAgent(IConfiguration configuration)
         {
-            services.AddSingleton<ClientResolver>()
-                .AddSingleton<IChatClient>(sp => sp.GetRequiredService<ClientResolver>().GetClient())
+            services.AddSingleton<OpenAIClientResolver>()
+                .AddSingleton<IChatClient>(sp => sp.GetRequiredService<OpenAIClientResolver>().GetClient())
                 .AddSingleton<IStateChangeReceiver, Herdr>()
                 .AddSingleton<IToolGateEnforcer, ToolGateEnforcer>()
                 .AddSingleton<ISessionIndex, SessionIndex>()
@@ -34,7 +34,7 @@ public static class ServiceExtensions
             }
             else
             {
-                services.AddSingleton<IChatClient>(sp => sp.GetRequiredService<ClientResolver>().GetClient());
+                services.AddSingleton<IChatClient>(sp => sp.GetRequiredService<OpenAIClientResolver>().GetClient());
             }
             
             return services;

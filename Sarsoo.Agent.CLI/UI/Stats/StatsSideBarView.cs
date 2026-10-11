@@ -9,9 +9,6 @@ namespace Sarsoo.Agent.CLI.UI.Stats;
 
 public class StatsSideBarView: View
 {
-    private readonly StatsTables _statsTables;
-    private readonly AgentSessionContext _context;
-
     private readonly View _tokensLabel = new()
     {
         Text = "Tokens",
@@ -56,8 +53,6 @@ public class StatsSideBarView: View
         StatsTables statsTables
     )
     {
-        _statsTables = statsTables;
-
         CanFocus = false;
         BorderStyle = LineStyle.RoundedDotted;
         

@@ -11,7 +11,7 @@ public class AgentsMdProvider : AIContextProvider
         public string? AgentsMd { get; set; }
         private bool _initialized;
 
-        public async Task<string?> GetAgentsMd(ILogger<AgentsMdProvider> logger,
+        public async Task<string?> GetAgentsMd(ILogger<AgentsMdProvider>? logger,
             CancellationToken cancellationToken = default)
         {
             if (!_initialized)
@@ -22,7 +22,7 @@ public class AgentsMdProvider : AIContextProvider
             return AgentsMd;
         }
         
-        private async Task Initialize(ILogger<AgentsMdProvider> logger, CancellationToken cancellationToken = default)
+        private async Task Initialize(ILogger<AgentsMdProvider>? logger, CancellationToken cancellationToken = default)
         {
             var cwd = Directory.GetCurrentDirectory();
             var root = Directory.GetDirectoryRoot(cwd);
@@ -47,7 +47,7 @@ public class AgentsMdProvider : AIContextProvider
             }
             catch (Exception e)
             {
-                logger.LogError(e, "Error loading AGENTS.md");
+                logger?.LogError(e, "Error loading AGENTS.md");
             }
 
             for (var i = agents.Count; i != 0; i--)
@@ -65,9 +65,9 @@ public class AgentsMdProvider : AIContextProvider
     }
     
     private readonly ProviderSessionState<AgentsMdState> _sessionState;
-    private readonly ILogger<AgentsMdProvider> _logger;
+    private readonly ILogger<AgentsMdProvider>? _logger;
 
-    public AgentsMdProvider(ILogger<AgentsMdProvider> logger)
+    public AgentsMdProvider(ILogger<AgentsMdProvider>? logger = null)
     {
         _logger = logger;
         _sessionState = new ProviderSessionState<AgentsMdState>(

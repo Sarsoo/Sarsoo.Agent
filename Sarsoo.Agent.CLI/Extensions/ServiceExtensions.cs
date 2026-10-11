@@ -43,10 +43,8 @@ public static class ServiceExtensions
         {
             serviceCollection.AddAgent(configuration)
                 .AddSingleton<AgentSessionContext>(sp => 
-                    new AgentBuilder(sp.GetRequiredService<IChatClient>(), sp.GetRequiredService<ILoggerFactory>(), sp)
-                        .WithBashShell()
-                        .WithAgentsMd()
-                        .Build()
+                    sp.GetRequiredService<IChatClient>()
+                        .AsCodingAgent(serviceProvider: sp)
                 )
                 .AddSingleton<SessionUiBinding>()
                 .AddHostedService<SessionUiBinding>(sp => sp.GetRequiredService<SessionUiBinding>());

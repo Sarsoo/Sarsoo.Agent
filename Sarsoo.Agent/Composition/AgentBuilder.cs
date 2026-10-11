@@ -2,6 +2,7 @@ using System.Text;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Tools.Shell;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.Context;
 using Sarsoo.Agent.Session;
@@ -11,21 +12,22 @@ namespace Sarsoo.Agent.Composition;
 public class AgentBuilder
 {
     private readonly IChatClient _client;
-    private readonly ILoggerFactory _loggerFactory;
+    private readonly ILoggerFactory? _loggerFactory;
     
     private readonly IServiceProvider? _serviceProvider;
     
-    private List<string> _systemPrompts = new();
-    private List<AIContextProvider> _contextProviders = new();
-    private List<AITool> _tools = new();
+    private readonly List<string> _systemPrompts = new();
+    private readonly List<AIContextProvider> _contextProviders = new();
+    private readonly List<AITool> _tools = new();
+    private readonly List<Func<ToolAutoApprovalRuleContext, ValueTask<bool>>> _autoApprovalRules = new();
     
     public AgentBuilder(
         IChatClient client,
-        ILoggerFactory loggerFactory,
+        ILoggerFactory? loggerFactory = null,
         IServiceProvider? serviceProvider = null)
     {
         _client = client;
-        _loggerFactory = loggerFactory;
+        _loggerFactory = loggerFactory ?? serviceProvider?.GetRequiredService<ILoggerFactory>();
         _serviceProvider = serviceProvider;
     }
 
@@ -43,12 +45,40 @@ public class AgentBuilder
 
     public AgentBuilder WithAgentsMd()
     {
-        _contextProviders.Add(new AgentsMdProvider(_loggerFactory.CreateLogger<AgentsMdProvider>()));
+        _contextProviders.Add(new AgentsMdProvider(_loggerFactory?.CreateLogger<AgentsMdProvider>()));
+        
+        return this;
+    }
+
+    private string AddSkillsSubDirectory(string path) => Path.Combine(path, ".agents", "skills");
+
+    public AgentBuilder WithSkills(bool globalSkills = true, bool projectSkills = true, Func<ToolAutoApprovalRuleContext, ValueTask<bool>>? autoApproval = null)
+    {
+        var skillsPaths = new List<string>();
+
+        if (globalSkills)
+        {
+            skillsPaths.Add(AddSkillsSubDirectory(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)));
+        }
+        
+        if (projectSkills)
+        {
+            skillsPaths.Add(AddSkillsSubDirectory(Directory.GetCurrentDirectory()));
+        }
+        
+        var skillsProvider = new AgentSkillsProvider(
+            skillPaths: skillsPaths,
+            loggerFactory: _loggerFactory
+        );
+        
+        _autoApprovalRules.Add(autoApproval ?? AgentSkillsProvider.ReadOnlyToolsAutoApprovalRule);
+        
+        _contextProviders.Add(skillsProvider);
         
         return this;
     }
     
-    public AgentBuilder WithBashShell(bool contextProvider = true)
+    public AgentBuilder WithBashShell(bool contextProvider = true, bool requireApproval = true)
     {
         var shell = new LocalShellExecutor(new()
         {
@@ -56,21 +86,30 @@ public class AgentBuilder
             AcknowledgeUnsafe = true,
             CleanEnvironment = true
         });
-        var shellEnvironment = contextProvider ? new ShellEnvironmentProvider(shell) : null;
         
-        return WithShell(shell, shellEnvironment);
+        if(contextProvider)
+        {
+            _contextProviders.Add(new ShellEnvironmentProvider(shell, new()
+            {
+                ProbeTools = ["git", "dotnet", "node", "python", "python3", "docker", "podman"],
+                OverrideFamily = ShellFamily.Posix
+            }));
+        }
+        
+        return WithFunction(shell.AsAIFunction(
+                name: "bash", 
+                description: "Run a bash command", 
+                requireApproval: requireApproval
+            )
+        );
     }
 
-    public AgentBuilder WithShell(ShellExecutor executor, ShellEnvironmentProvider? environmentProvider = null)
+    public AgentBuilder WithFunction(AIFunction func)
     {
-        if (environmentProvider is not null)
-        {
-            _contextProviders.Add(environmentProvider);
-        }
-        _tools.Add(executor.AsAIFunction());
+        _tools.Add(func);
         return this;
     }
-
+    
     public AgentSessionContext Build()
     {
         string? systemPrompt = null;
@@ -95,13 +134,19 @@ public class AgentBuilder
                 {
                     Tools = _tools.Any() ? _tools : null
                 },
+                ToolApprovalAgentOptions = new()
+                {
+                    AutoApprovalRules = _autoApprovalRules.Any() ? _autoApprovalRules : null
+                },
+                DisableAgentSkillsProvider = true,
                 DisableTodoProvider = true,
                 DisableWebSearch = true,
                 DisableFileMemory = true,
                 DisableAgentModeProvider = true,
             }, 
             loggerFactory: _loggerFactory, 
-            services: _serviceProvider);
+            services: _serviceProvider
+        );
 
         var context = new AgentSessionContext(agent);
         context.AddDisposableRange(_contextProviders);

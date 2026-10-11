@@ -103,7 +103,7 @@ public class AgentInteractiveLifetime(
             }
             
             logger.LogInformation("Creating agent session");
-            await Agent.InitSession(stoppingToken).ConfigureAwait(false);
+            await Agent.TryInitSession(stoppingToken).ConfigureAwait(false);
             
             logger.LogInformation("Waiting for first user message");
             await foreach (var userMessage in _userMessages.Reader.ReadAllAsync(stoppingToken).ConfigureAwait(false))

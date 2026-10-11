@@ -5,6 +5,8 @@ using Microsoft.Extensions.Logging;
 using NLog.Config;
 using NLog.Extensions.Logging;
 using NLog.Targets;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
 using Sarsoo.Agent.CLI.Extensions;
 using Sarsoo.Agent.IO;
 using Terminal.Gui.App;
@@ -36,6 +38,18 @@ public static class InitTui
         
         host.Logging.ClearProviders()
             .AddNLog(nlogConfig);
+        
+        host.AddOpenTelemetry()
+            .UseOtlpExporter()
+            .WithTracing(o =>
+            {
+                o.AddSource("Sarsoo.*");
+            })
+            .WithMetrics(o =>
+            {
+                o.AddMeter("Sarsoo.*");
+                o.AddRuntimeInstrumentation();
+            });
 
         host.Services.AddUi().AddAgentSessions(host.Configuration);
 

@@ -5,10 +5,11 @@ using Microsoft.Extensions.Options;
 using OpenAI;
 using Sarsoo.Agent.Client.Policy;
 using Sarsoo.Agent.Options;
+using UserAgentPolicy = Sarsoo.Agent.Client.Policy.UserAgentPolicy;
 
 namespace Sarsoo.Agent.Client;
 
-public class ClientResolver(IOptions<ProviderOptions> options) : IClientResolver
+public class OpenAIClientResolver(IOptions<ProviderOptions> options) : IClientResolver
 {
     public IChatClient GetClient(Action<ChatOptions>? configureOptions = null)
     {
@@ -20,6 +21,7 @@ public class ClientResolver(IOptions<ProviderOptions> options) : IClientResolver
         };
         
         chatOptions.AddPolicy(new SessionIdPolicy(sessionId), PipelinePosition.PerCall);
+        chatOptions.AddPolicy(new UserAgentPolicy(), PipelinePosition.PerCall);
 
         var providerClient = new OpenAIClient(creds, chatOptions)
             .GetChatClient(options.Value.Model!)
