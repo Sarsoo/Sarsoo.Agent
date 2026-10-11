@@ -28,6 +28,7 @@ public static class InitTui
         
         host.Configuration
             .AddJsonFile(Config.GetConfigFile(), optional: true)
+            .AddEnvironmentVariables()
             .AddTuiAppDefaults();
         
         var nlogConfig = new LoggingConfiguration();
