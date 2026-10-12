@@ -25,6 +25,19 @@ public class AgentBuilder
 
     private AgentFileStore? _fileStore = null;
     private FileAccessProviderOptions? _fileAccessOptions = null;
+
+    private string? _name = null;
+    private string? _id = null;
+    private string? _description = null;
+    
+    private string? _modelId = null;
+    private string? _conversationId = null;
+    private bool? _multipleToolCalls = null;
+    
+    private ReasoningEffort? _reasoningEffort = null;
+    private ReasoningOutput? _reasoningFormat = null;
+    
+    private ChatToolMode? _toolMode = null;
     
     public AgentBuilder(
         IChatClient client,
@@ -34,6 +47,60 @@ public class AgentBuilder
         _client = client;
         _loggerFactory = loggerFactory ?? serviceProvider?.GetRequiredService<ILoggerFactory>();
         _serviceProvider = serviceProvider;
+    }
+
+    public AgentBuilder WithId(string id)
+    {
+        _id = id;
+        return this;
+    }
+
+    public AgentBuilder WithName(string name)
+    {
+        _name = name;
+        return this;
+    }
+
+    public AgentBuilder WithDescription(string description)
+    {
+        _description = description;
+        return this;
+    }
+
+    public AgentBuilder WithModel(string modelId)
+    {
+        _modelId = modelId;
+        return this;
+    }
+
+    public AgentBuilder WithConversationId(string id)
+    {
+        _conversationId = id;
+        return this;
+    }
+
+    public AgentBuilder WithMultipleToolCalls(bool? allowed = true)
+    {
+        _multipleToolCalls = allowed;
+        return this;
+    }
+
+    public AgentBuilder WithReasoningEffort(ReasoningEffort effort)
+    {
+        _reasoningEffort = effort;
+        return this;
+    }
+
+    public AgentBuilder WithReasoningFormat(ReasoningOutput format)
+    {
+        _reasoningFormat = format;
+        return this;
+    }
+
+    public AgentBuilder WithToolMode(ChatToolMode mode)
+    {
+        _toolMode = mode;
+        return this;
     }
 
     public AgentBuilder WithSystemPrompt(string prompt)
@@ -160,14 +227,32 @@ public class AgentBuilder
             
             systemPrompt = builder.ToString();
         }
+
+        ReasoningOptions? reasoning = null;
+        if ((_reasoningEffort, _reasoningFormat) is not (null, null))
+        {
+            reasoning = new()
+            {
+                Effort = _reasoningEffort,
+                Output = _reasoningFormat
+            };
+        }
         
         return _client.AsHarnessAgent(options: new()
             {
+                Id = _id,
+                Name = _name,
+                Description = _description,
                 HarnessInstructions = systemPrompt,
                 AIContextProviders = _contextProviders.Any() ? _contextProviders : null,
                 ChatOptions = new()
                 {
-                    Tools = _tools.Any() ? _tools : null
+                    Tools = _tools.Any() ? _tools : null,
+                    ModelId = _modelId,
+                    ConversationId = _conversationId,
+                    AllowMultipleToolCalls = _multipleToolCalls,
+                    Reasoning = reasoning,
+                    ToolMode = _toolMode
                 },
                 ToolApprovalAgentOptions = new()
                 {
