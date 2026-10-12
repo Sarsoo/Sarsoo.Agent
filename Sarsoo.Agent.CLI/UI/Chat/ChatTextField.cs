@@ -16,7 +16,7 @@ public class ChatTextField: Editor
     public ChatTextField(AgentWorkspace workspace, ILogger<ChatTextField> logger)
     {
         CanFocus = true;
-        TabStop = TabBehavior.TabGroup;
+        TabStop = TabBehavior.TabStop;
         
         _workspace = workspace;
         _logger = logger;

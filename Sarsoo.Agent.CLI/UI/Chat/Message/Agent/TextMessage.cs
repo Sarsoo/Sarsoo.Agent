@@ -1,4 +1,5 @@
 using Microsoft.Extensions.AI;
+using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -30,12 +31,67 @@ public class TextMessage: AgentMessage<TextContent>
         Markdown.ViewportSettings &= ~ViewportSettingsFlags.HasVerticalScrollBar;
         Markdown.ContentSizeChanged += (sender, args) =>
         {
-            Height = Markdown.GetContentHeight();
+            // Height is the frame size, which includes adornments; GetContentHeight() only
+            // reports the viewport content height. Without the adornment thickness the last
+            // rows of the message are clipped by the border.
+            Height = Markdown.GetContentHeight() + GetAdornmentsThickness().Vertical;
             Markdown.SetNeedsDraw();
             SetNeedsDraw();
+            ScheduleRelayout();
+        };
+
+        // Drop a pending relayout if the message goes away before it runs.
+        Disposing += (sender, args) =>
+        {
+            if (_relayoutToken is { } token)
+            {
+                _relayoutToken = null;
+                _relayoutApp?.RemoveTimeout(token);
+                _relayoutApp = null;
+            }
         };
         
         Add(Markdown);
+    }
+
+    private IApplication? _relayoutApp;
+    private object? _relayoutToken;
+
+    /// <summary>
+    ///     Requests another layout pass on the next application iteration.
+    /// </summary>
+    /// <remarks>
+    ///     <see cref="Markdown.ContentSizeChanged"/> fires while the Markdown child is being
+    ///     laid out, which is after this message's own frame has already been resolved. The
+    ///     <see cref="View.SetNeedsLayout"/> raised by setting <see cref="View.Height"/> is
+    ///     therefore cleared again when the ancestor layout pass completes, leaving the message
+    ///     at its old height until some unrelated layout (e.g. scrolling) happens. Deferring the
+    ///     request to the next iteration ensures the new height is actually applied.
+    /// </remarks>
+    private void ScheduleRelayout()
+    {
+        if (_relayoutToken is not null)
+        {
+            return;
+        }
+
+        if (App is not { } app)
+        {
+            // No application (e.g. headless use); nothing will render, so just flag layout.
+            SetNeedsLayout();
+
+            return;
+        }
+
+        _relayoutApp = app;
+        _relayoutToken = app.AddTimeout(TimeSpan.Zero, () =>
+        {
+            _relayoutToken = null;
+            _relayoutApp = null;
+            SetNeedsLayout();
+
+            return false;
+        });
     }
     
     private string _totalMessage = string.Empty;
