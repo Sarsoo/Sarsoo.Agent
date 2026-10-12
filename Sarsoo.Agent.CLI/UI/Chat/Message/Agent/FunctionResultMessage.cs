@@ -19,5 +19,6 @@ public class FunctionResultMessage: AgentMessage<FunctionResultContent>
         Content = content;
         
         Text += content.Result;
+        SetNeedsDraw();
     }
 }

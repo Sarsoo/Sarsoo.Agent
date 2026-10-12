@@ -16,7 +16,7 @@ public class ChatTextField: Editor
     public ChatTextField(AgentWorkspace workspace, ILogger<ChatTextField> logger)
     {
         CanFocus = true;
-        TabStop = TabBehavior.TabStop;
+        TabStop = TabBehavior.TabGroup;
         
         _workspace = workspace;
         _logger = logger;
@@ -27,16 +27,14 @@ public class ChatTextField: Editor
         Multiline = true;
         WordWrap = true;
 
-        Cursor = Cursor with
-        {
-            Style = CursorStyle.BlinkingBar
-        };
-
         // Enter submits the prompt; Shift+Enter (or Alt+Enter where Shift+Enter is not
         // distinguishable by the terminal) inserts a newline.
         KeyBindings.Remove(Key.Enter);
         KeyBindings.Remove(Key.C.WithCtrl);
         KeyBindings.Remove(Key.Tab);
+        KeyBindings.Remove(Key.Tab.WithShift);
+        KeyBindings.Add (Key.Tab, Command.NextTabStop);
+        KeyBindings.Add (Key.Tab.WithShift, Command.PreviousTabStop);
         KeyBindings.Add(Key.Enter, Command.Accept);
         KeyBindings.Add(Key.Enter.WithShift, Command.NewLine);
         KeyBindings.Add(Key.Enter.WithAlt, Command.NewLine);
@@ -47,6 +45,18 @@ public class ChatTextField: Editor
         // thread. TextDocument captures its owner thread at construction, so release ownership
         // here (while we still are that thread) and let the first UI-thread access claim it.
         Document?.SetOwnerThread(null);
+    }
+
+    protected override bool OnDrawingContent(DrawContext? context)
+    {
+        var ret = base.OnDrawingContent(context);
+
+        Cursor = Cursor with
+        {
+            Style = CursorStyle.BlinkingBar
+        };
+
+        return ret;
     }
 
     private bool? OnEnter()

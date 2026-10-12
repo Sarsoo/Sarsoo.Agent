@@ -1,3 +1,4 @@
+using System.Text;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
@@ -10,6 +11,7 @@ public class BaseMessage: View
     ///     Raised when the content of this message is updated (e.g. streamed text appended).
     /// </summary>
     public event EventHandler? ContentChanged;
+    public override Rune HotKeySpecifier => (Rune)'\xffff';
 
     public BaseMessage()
     {

@@ -52,6 +52,7 @@ public class AgentMessage<T>: AgentMessage, IAgentMessage<T> where T: AIContent
             App?.Invoke(() =>
             {
                 Text += content?.ToString() ?? "";
+                SetNeedsDraw();
             });
         }
     }

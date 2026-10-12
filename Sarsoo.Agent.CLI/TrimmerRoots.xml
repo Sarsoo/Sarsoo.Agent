@@ -5,4 +5,5 @@
       NativeAOT trimming from removing required metadata.
     -->
     <assembly fullname="Terminal.Gui" preserve="all" />
+    <assembly fullname="Terminal.Gui.Editor" preserve="all" />
 </linker>

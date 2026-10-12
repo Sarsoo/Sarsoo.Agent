@@ -20,5 +20,6 @@ public class FunctionCallMessage: AgentMessage<FunctionCallContent>
         Content = content;
         
         Text += content.Signature;
+        SetNeedsDraw();
     }
 }

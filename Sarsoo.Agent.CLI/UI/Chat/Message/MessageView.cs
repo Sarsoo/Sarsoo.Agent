@@ -22,6 +22,7 @@ public class MessageView: View
     {
         _logger = logger;
         CanFocus = true;
+        TabStop = TabBehavior.TabStop;
         
         ViewportSettings |= ViewportSettingsFlags.HasVerticalScrollBar;
         VerticalScrollBar.VisibilityMode = ScrollBarVisibilityMode.Always;

@@ -31,6 +31,7 @@ public class TextMessage: AgentMessage<TextContent>
         Markdown.ContentSizeChanged += (sender, args) =>
         {
             Height = Markdown.GetContentHeight();
+            Markdown.SetNeedsDraw();
             SetNeedsDraw();
         };
         
@@ -55,6 +56,8 @@ public class TextMessage: AgentMessage<TextContent>
             App?.Invoke(() =>
                 {
                     Markdown.Text = toSet;
+                    Markdown.SetNeedsDraw();
+                    SetNeedsDraw();
                 }
             );
         }

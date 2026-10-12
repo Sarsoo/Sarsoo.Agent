@@ -62,7 +62,7 @@ public sealed class AgentWorkspace : IAsyncDisposable
         }
 
         profile ??= _options.Value.DefaultProfile;
-        name ??= NextAutoName();
+        name ??= NextAutoName(profile, name);
 
         if (_tabsByName.ContainsKey(name))
         {
@@ -168,15 +168,15 @@ public sealed class AgentWorkspace : IAsyncDisposable
         return tab;
     }
 
-    private string NextAutoName()
+    private string NextAutoName(string? profile = null, string? name = null)
     {
-        string name;
+        string n;
         do
         {
-            name = $"agent-{++_autoNameCounter}";
-        } while (_tabsByName.ContainsKey(name));
+            n = $"{name ?? profile ?? "agent"}-{++_autoNameCounter}";
+        } while (_tabsByName.ContainsKey(n));
 
-        return name;
+        return n;
     }
 
     private void OnTabValueChanged(object? sender, ValueChangedEventArgs<View?> e)
