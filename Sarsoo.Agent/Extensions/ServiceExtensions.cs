@@ -19,11 +19,7 @@ public static class ServiceExtensions
                 .AddSingleton<IStateChangeReceiver, Herdr>()
                 .AddSingleton<IToolGateEnforcer, ToolGateEnforcer>()
 
-                .AddSingleton<AgentProfile>(new AgentProfile(
-                    "coding",
-                    "Coding agent with shell, filesystem, AGENTS.md and skills.",
-                    builder => builder.AsCodingAgent(),
-                    IncludeAdvisor: true))
+                .AddCodingAgent()
                 .AddSingleton<IAgentProfileRegistry, AgentProfileRegistry>()
                 .AddTransient<IAdvisorFactory, AdvisorFactory>()
                 .AddSingleton<IAgentFactory, AgentFactory>()

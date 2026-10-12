@@ -13,7 +13,7 @@ public class AgentOptions
 public class AgentDefinition
 {
     public string Name { get; set; } = "";
-    public string Profile { get; set; } = "coding";
+    public string Profile { get; set; } = "";
     public string? Model { get; set; }
     public ReasoningEffort? ThinkingLevel { get; set; }
     public string? Prompt { get; set; }

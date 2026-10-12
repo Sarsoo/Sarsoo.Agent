@@ -1,11 +1,23 @@
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.Session;
 
 namespace Sarsoo.Agent.Composition;
 
-public static class Templates
+public static partial class Templates
 {
+    extension(IServiceCollection services)
+    {
+        public IServiceCollection AddCodingAgent() =>
+            services.AddSingleton(new AgentProfile(
+                "coding",
+                "Coding agent with shell, filesystem, AGENTS.md and skills.",
+                builder => builder.AsCodingAgent()
+                )
+        );
+    }
+    
     extension(IChatClient client)
     {
         public AgentSessionContext AsCodingAgent(
@@ -39,6 +51,7 @@ public static class Templates
                                     - Valid examples = piping/globbing/"find -exec" and similar
                                   """)
                 .WithBashShell()
+                .WithAdvisor()
                 .WithFileSystem()
                 .WithAgentsMd()
                 .WithSkills();

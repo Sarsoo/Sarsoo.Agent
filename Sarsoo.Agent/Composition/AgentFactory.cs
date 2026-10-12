@@ -27,7 +27,6 @@ public sealed class AgentFactory(
     IServiceProvider serviceProvider,
     IClientResolver clientResolver,
     IAgentProfileRegistry profiles,
-    IOptions<AdvisorOptions> advisorOptions,
     IToolGateEnforcer toolGateEnforcer,
     IEnumerable<IStateChangeReceiver> stateChangeReceivers,
     ILoggerFactory loggerFactory
@@ -51,11 +50,6 @@ public sealed class AgentFactory(
         }
 
         builder = profile.Configure(builder);
-
-        if (profile.IncludeAdvisor && advisorOptions.Value.Enabled)
-        {
-            builder = builder.WithAdvisor();
-        }
 
         return builder.Build(name);
     }

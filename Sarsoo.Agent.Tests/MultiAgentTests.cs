@@ -33,13 +33,11 @@ internal static class TestAgents
             NullLogger<ToolGateEnforcer>.Instance);
 
         var clientResolver = new FakeClientResolver();
-        var advisorOptions = Microsoft.Extensions.Options.Options.Create(new AdvisorOptions { Enabled = false });
 
         return new AgentFactory(
             services,
             clientResolver,
             profiles,
-            advisorOptions,
             gate,
             receivers ?? Array.Empty<IStateChangeReceiver>(),
             NullLoggerFactory.Instance);

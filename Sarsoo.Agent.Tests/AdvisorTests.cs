@@ -132,8 +132,7 @@ public class AdvisorToolFactoryTests
 public class AgentFactoryAdvisorTests
 {
     private static AgentFactory CreateFactory(
-        AgentProfile profile,
-        AdvisorOptions advisorOptions
+        AgentProfile profile
     )
     {
         var services = new ServiceCollection().AddTransient<IAdvisorFactory, RecordingAdvisorToolFactory>().BuildServiceProvider();
@@ -147,7 +146,6 @@ public class AgentFactoryAdvisorTests
             services,
             new FakeClientResolver(),
             new AgentProfileRegistry([profile]),
-            Microsoft.Extensions.Options.Options.Create(advisorOptions),
             gate,
             Array.Empty<IStateChangeReceiver>(),
             NullLoggerFactory.Instance);
@@ -158,8 +156,7 @@ public class AgentFactoryAdvisorTests
     {
         var advisor = new RecordingAdvisorToolFactory();
         var factory = CreateFactory(
-            new AgentProfile("with-advisor", "d", builder => builder, IncludeAdvisor: true),
-            new AdvisorOptions());
+            new AgentProfile("with-advisor", "d", builder => builder.WithAdvisor()));
 
         factory.CreateSession("with-advisor", "alpha");
 
@@ -171,8 +168,7 @@ public class AgentFactoryAdvisorTests
     {
         var advisor = new RecordingAdvisorToolFactory();
         var factory = CreateFactory(
-            new AgentProfile("no-advisor", "d", builder => builder),
-            new AdvisorOptions());
+            new AgentProfile("no-advisor", "d", builder => builder));
 
         factory.CreateSession("no-advisor", "alpha");
 
@@ -184,8 +180,7 @@ public class AgentFactoryAdvisorTests
     {
         var advisor = new RecordingAdvisorToolFactory();
         var factory = CreateFactory(
-            new AgentProfile("with-advisor", "d", builder => builder, IncludeAdvisor: true),
-            new AdvisorOptions { Enabled = false });
+            new AgentProfile("with-advisor", "d", builder => builder));
 
         factory.CreateSession("with-advisor", "alpha");
 
