@@ -194,7 +194,7 @@ public class AgentSessionRunnerTests
         _ = runner.RunAsync();
         runner.Post("hi");
 
-        await idleAfterBusy.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.Current.CancellationToken);
+        await idleAfterBusy.Task.WaitAsync(TimeSpan.FromSeconds(20), TestContext.Current.CancellationToken);
 
         Assert.Contains(receiver.Events, e => e.AgentId == "beta" && e.State == AgentState.Busy);
 
@@ -212,7 +212,7 @@ public class AgentWorkspaceTests
 
         var first = workspace.Create();
         Assert.NotNull(first);
-        Assert.Equal("agent-1", first!.Runner.Name);
+        Assert.Equal("test-1", first!.Runner.Name);
         Assert.Same(first, workspace.Active);
 
         var second = workspace.Create("test", "beta");

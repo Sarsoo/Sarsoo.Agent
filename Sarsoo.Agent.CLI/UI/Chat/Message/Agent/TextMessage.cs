@@ -13,7 +13,11 @@ public class TextMessage: AgentMessage<TextContent>
         Text = "",
         Width = Dim.Fill(),
         Height = Dim.Fill(),
-        BorderStyle = LineStyle.None
+        BorderStyle = LineStyle.None,
+
+        // Messages are display-only; focus stays on the MessageView so arrow/page keys scroll
+        // the message list rather than scrolling a message internally.
+        CanFocus = false
     };
     
     public TextMessage(TextContent content) : base(content)
