@@ -18,6 +18,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Sarsoo.Agent.CLI\Sarsoo.Agent.CLI.csproj" />
+      <ProjectReference Include="..\Sarsoo.Agent.K8s\Sarsoo.Agent.K8s.csproj" />
       <ProjectReference Include="..\Sarsoo.Agent\Sarsoo.Agent.csproj" />
     </ItemGroup>
 

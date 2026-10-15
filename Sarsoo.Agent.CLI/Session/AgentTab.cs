@@ -1,5 +1,8 @@
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.CLI.Extensions;
+using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.UI.Chat.Message;
 using Sarsoo.Agent.Session;
 using Sarsoo.Agent.Session.Orchestration;
@@ -14,15 +17,17 @@ namespace Sarsoo.Agent.CLI.Session;
 public sealed class AgentTab : View, IAsyncDisposable
 {
     private readonly MessageView _messages;
+    private readonly ILogger<AgentTab> _logger;
     private bool _runnerDisposed;
     private bool _viewDisposed;
 
-    public AgentTab(AgentSessionRunner runner, MessageView messages, TokenSessionStats stats)
+    public AgentTab(AgentSessionRunner runner, MessageView messages, TokenSessionStats stats, ILogger<AgentTab> logger)
     {
         Runner = runner;
         Session = runner.Session;
         Stats = stats;
         _messages = messages;
+        _logger = logger;
 
         Title = runner.Name;
         CanFocus = true;
@@ -42,6 +47,8 @@ public sealed class AgentTab : View, IAsyncDisposable
 
     private void OnUserMessage(object? sender, ChatMessage userMessage)
     {
+        _logger.LogThreadWarning(App);
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentTab)}::{nameof(OnUserMessage)}");
         if (!string.IsNullOrWhiteSpace(userMessage.Text))
         {
             _messages.AddMessage(new UserMessage(userMessage));
@@ -51,6 +58,8 @@ public sealed class AgentTab : View, IAsyncDisposable
 
     private void OnAgentMessage(object? sender, AgentResponseUpdate update)
     {
+        _logger.LogThreadWarning(App);
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentTab)}::{nameof(OnAgentMessage)}");
         _messages.AddAgentMessage(update);
         _messages.SetNeedsDraw();
     }
@@ -61,6 +70,7 @@ public sealed class AgentTab : View, IAsyncDisposable
     /// </summary>
     public async ValueTask DisposeRunnerAsync()
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentTab)}::{nameof(DisposeRunnerAsync)}");
         if (_runnerDisposed)
         {
             return;

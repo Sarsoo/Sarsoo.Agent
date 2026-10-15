@@ -1,4 +1,5 @@
 using Microsoft.Agents.AI;
+using Sarsoo.Agent.Observability;
 using Sarsoo.Agent.Session.Stats;
 
 namespace Sarsoo.Agent.Session;
@@ -18,6 +19,7 @@ public class AgentSessionContext(AIAgent agent, string name): IAsyncDisposable
     
     public async Task<bool> TryInitSession(CancellationToken cancellationToken = default)
     {
+        using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionContext)}::{nameof(TryInitSession)}");
         try
         {
             await _sessionLock.WaitAsync(cancellationToken);

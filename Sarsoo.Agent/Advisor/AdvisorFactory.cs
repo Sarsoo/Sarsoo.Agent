@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Composition;
+using Sarsoo.Agent.Observability;
 using Sarsoo.Agent.Options;
 
 namespace Sarsoo.Agent.Advisor;
@@ -25,6 +26,7 @@ public class AdvisorFactory(
 
     public AIFunction CreateTool()
     {
+        using var trace = Tracing.Source.StartActivity($"{nameof(AdvisorContextProvider)}::{nameof(CreateTool)}");
         var advisor = options.Value;
         var client = clientResolver.GetClient(advisor.Model, advisor.ThinkingLevel);
 

@@ -11,14 +11,14 @@ public class FunctionResultMessage: AgentMessage<FunctionResultContent>
         BorderStyle = LineStyle.None;
         SchemeName = "FunctionResultMessage";
         
-        Text = content.Result?.ToString() ?? "";
+        // Text = content.Result?.ToString() ?? "";
     }
 
     public override void SetContent(FunctionResultContent content)
     {
-        Content = content;
-        
-        Text += content.Result;
-        SetNeedsDraw();
+        // Content = content;
+        //
+        // Text += content.Result;
+        // SetNeedsDraw();
     }
 }

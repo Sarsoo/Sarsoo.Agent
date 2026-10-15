@@ -48,7 +48,8 @@ internal static class TestAgents
             CreateFactory(receivers),
             Microsoft.Extensions.Options.Options.Create(new AgentOptions { DefaultProfile = "test" }),
             NullLoggerFactory.Instance,
-            NullLogger<AgentWorkspace>.Instance);
+            NullLogger<AgentWorkspace>.Instance,
+            NullLogger<AgentTab>.Instance);
 }
 
 internal sealed class FakeClientResolver(Func<IChatClient>? factory = null) : IClientResolver

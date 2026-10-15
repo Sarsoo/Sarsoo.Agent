@@ -1,5 +1,7 @@
 <Solution>
   <Project Path="Sarsoo.Agent.CLI\Sarsoo.Agent.CLI.csproj" />
+  <Project Path="Sarsoo.Agent.DevOps/Sarsoo.Agent.DevOps.csproj" />
+  <Project Path="Sarsoo.Agent.K8s/Sarsoo.Agent.K8s.csproj" />
   <Project Path="Sarsoo.Agent.Tests/Sarsoo.Agent.Tests.csproj" />
   <Project Path="Sarsoo.Agent/Sarsoo.Agent.csproj" />
 </Solution>

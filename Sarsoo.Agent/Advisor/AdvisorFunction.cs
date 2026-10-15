@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Text;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using Sarsoo.Agent.Observability;
 
 namespace Sarsoo.Agent.Advisor;
 
@@ -12,6 +13,7 @@ public class AdvisorFunction(
 {
     public async Task<string?> GetAdvice(string? query)
     {
+        using var trace = Tracing.Source.StartActivity($"{nameof(AdvisorFunction)}::{nameof(GetAdvice)}");
         var messages = sharedContext
             .GetContext()
             .Where(m => m.Role != ChatRole.System)

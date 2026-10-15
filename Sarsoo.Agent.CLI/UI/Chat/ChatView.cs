@@ -28,6 +28,7 @@ public class ChatView: View
         // inside the tab (content <-> title) and prevents reaching the input field.
         // Keep the title focusable for tab switching, but out of keyboard navigation.
         tabs.SubViewAdded += (_, e) => ExcludeTitleFromNavigation(e.SubView);
+        tabs.SubViewAdded += (_, e) => FocusText();
 
         foreach (var tab in tabs.SubViews)
         {

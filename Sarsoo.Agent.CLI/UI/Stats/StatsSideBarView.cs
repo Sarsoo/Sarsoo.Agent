@@ -1,3 +1,4 @@
+using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.Session;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
@@ -65,11 +66,15 @@ public class StatsSideBarView: View
 
     public void Bind(TokenSessionStats? stats)
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(StatsSideBarView)}::{nameof(Bind)}");
         _tableView.Table = stats;
         _tableView.SetNeedsDraw();
     }
 
-    private void OnActiveChanged(object? sender, AgentTab? tab) => Bind(tab?.Stats);
+    private void OnActiveChanged(object? sender, AgentTab? tab) {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(StatsSideBarView)}::{nameof(OnActiveChanged)}");
+        Bind(tab?.Stats);
+    }
 
     protected override void Dispose(bool disposing)
     {

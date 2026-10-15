@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.Extensions;
+using Sarsoo.Agent.Observability;
 using Sarsoo.Agent.Session;
 
 namespace Sarsoo.Agent.Integrations;
@@ -20,6 +21,7 @@ public class Herdr(ILogger<Herdr> logger) : IStateChangeReceiver
 
     public async Task StateChanged(string agentId, AgentState state, CancellationToken token = default)
     {
+        using var trace = Tracing.Source.StartActivity();
         if (InHerdr)
         {
             var seqId = _seqIds.AddOrUpdate(agentId, 0, (_, current) => current + 1);

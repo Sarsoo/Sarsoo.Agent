@@ -5,6 +5,7 @@ using Sarsoo.Agent.Advisor;
 using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Gate;
 using Sarsoo.Agent.Integrations;
+using Sarsoo.Agent.Observability;
 using Sarsoo.Agent.Options;
 using Sarsoo.Agent.Session;
 using Sarsoo.Agent.Session.Orchestration;
@@ -41,6 +42,7 @@ public sealed class AgentFactory(
         string? systemPrompt = null
     )
     {
+        using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionContext)}::{nameof(CreateSession)}");
         var profile = profiles.Get(profileName);
         var builder = new AgentBuilder(clientResolver.GetClient(model, thinkingLevel, configureOptions), loggerFactory, serviceProvider);
 

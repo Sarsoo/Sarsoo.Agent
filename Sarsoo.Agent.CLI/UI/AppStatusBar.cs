@@ -1,3 +1,4 @@
+using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.Session;
 using Sarsoo.Agent.Session;
 using Sarsoo.Agent.Session.Orchestration;
@@ -51,6 +52,7 @@ public class AppStatusBar: StatusBar
 
     private void OnActiveChanged(object? sender, AgentTab? tab)
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AppStatusBar)}::{nameof(OnActiveChanged)}");
         if (_subscribed is { } previous)
         {
             previous.StateChanged -= OnStateChanged;
@@ -68,6 +70,7 @@ public class AppStatusBar: StatusBar
 
     private void OnStateChanged(object? sender, AgentState e)
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AppStatusBar)}::{nameof(OnStateChanged)}");
         SchemeName = e switch
         {
             AgentState.Busy => "StatusBarBusy",

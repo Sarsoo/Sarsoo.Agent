@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sarsoo.Agent.Observability;
 using Sarsoo.Agent.Options;
 
 namespace Sarsoo.Agent.Gate;
@@ -20,6 +21,8 @@ public class ToolGateEnforcer(
 {
     public async Task<ToolApprovalResponseContent> Request(ToolApprovalRequestContent request, string agentId, CancellationToken cancel = default)
     {
+        using var trace = Tracing.Source.StartActivity($"{nameof(ToolGateEnforcer)}::{nameof(Request)}");
+        
         logger.LogInformation("Tool approval required ({call_id}): {tool_request}", request.ToolCall.CallId, request);
         
         bool result = options.Value.DefaultResult;

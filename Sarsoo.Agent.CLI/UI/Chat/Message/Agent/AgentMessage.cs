@@ -7,6 +7,8 @@ namespace Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
 public interface IAgentMessage
 {
     ContentType? ContentType { get; }
+    
+    string? AgentName { get; set; }
 
     void SetContent(object content);
 }
@@ -23,6 +25,23 @@ public class AgentMessage: BaseMessage, IAgentMessage
     {
         Title = "";
         SchemeName = "AgentMessage";
+    }
+
+    public string? AgentName
+    {
+        get;
+        set
+        {
+            field = value;
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                Title = "Agent";
+            }
+            else
+            {
+                Title = value;
+            }
+        }
     }
 
     public virtual ContentType? ContentType => null;

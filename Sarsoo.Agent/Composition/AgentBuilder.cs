@@ -191,6 +191,20 @@ public class AgentBuilder
         _tools.Add(func);
         return this;
     }
+    
+    public AgentBuilder WithFunction(Func<IServiceProvider, AIFunction> func)
+    {
+        if (_serviceProvider is not null)
+        {
+            _tools.Add(func(_serviceProvider));
+        }
+        else
+        {
+            throw new InvalidOperationException("No service provider given to resolve function");
+        }
+        
+        return this;
+    }
 
     public AgentBuilder WithAdvisor()
     {
@@ -245,6 +259,7 @@ public class AgentBuilder
                 Description = _description,
                 HarnessInstructions = systemPrompt,
                 AIContextProviders = _contextProviders.Any() ? _contextProviders : null,
+                OpenTelemetrySourceName = "Sarsoo.Agent.Harness",
                 ChatOptions = new()
                 {
                     Tools = _tools.Any() ? _tools : null,

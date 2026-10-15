@@ -9,6 +9,7 @@ using OpenTelemetry;
 using OpenTelemetry.Metrics;
 using Sarsoo.Agent.CLI.Extensions;
 using Sarsoo.Agent.IO;
+using Sarsoo.Agent.Observability;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
 
@@ -45,6 +46,7 @@ public static class InitTui
             .WithTracing(o =>
             {
                 o.AddSource("Sarsoo.*");
+                Tracing.SetExceptionHandlers();
             })
             .WithMetrics(o =>
             {

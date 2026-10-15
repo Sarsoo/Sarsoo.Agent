@@ -1,5 +1,6 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.UI.Chat.Tool;
 using Sarsoo.Agent.Gate;
 using Terminal.Gui.App;
@@ -13,6 +14,7 @@ public class ToolCallPrompter(IApplication app, ILogger<ToolCallPrompter> logger
 {
     public async Task<ToolGateResponse> Request(ToolApprovalRequestContent request, string agentId, CancellationToken cancel = default)
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(Request)}");
         var completion = new TaskCompletionSource<(bool, string?)?>(TaskCreationOptions.RunContinuationsAsynchronously);
         Prompt<ToolApproval, (bool, string?)?>? prompt = null;
 
@@ -26,6 +28,7 @@ public class ToolCallPrompter(IApplication app, ILogger<ToolCallPrompter> logger
 
         app.Invoke(a =>
         {
+            using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(Request)}::AppThread");
             if (cancel.IsCancellationRequested)
             {
                 completion.TrySetResult(null);

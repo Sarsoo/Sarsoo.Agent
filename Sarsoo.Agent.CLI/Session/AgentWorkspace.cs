@@ -1,6 +1,8 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Sarsoo.Agent.CLI.Extensions;
+using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.UI.Chat.Message;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.Options;
@@ -22,6 +24,7 @@ public sealed class AgentWorkspace : IAsyncDisposable
     private readonly IApplication? _app;
     private readonly ILoggerFactory _loggerFactory;
     private readonly ILogger<AgentWorkspace> _logger;
+    private readonly ILogger<AgentTab> _tabLogger;
     private readonly Tabs _tabs = new();
     private readonly Dictionary<string, AgentTab> _tabsByName = new(StringComparer.OrdinalIgnoreCase);
     private int _autoNameCounter;
@@ -32,6 +35,7 @@ public sealed class AgentWorkspace : IAsyncDisposable
         IOptions<AgentOptions> options,
         ILoggerFactory loggerFactory,
         ILogger<AgentWorkspace> logger,
+        ILogger<AgentTab> tabLogger,
         IApplication? app = null
     )
     {
@@ -39,6 +43,7 @@ public sealed class AgentWorkspace : IAsyncDisposable
         _options = options;
         _loggerFactory = loggerFactory;
         _logger = logger;
+        _tabLogger = tabLogger;
         _app = app;
 
         _tabs.ValueChanged += OnTabValueChanged;
@@ -56,6 +61,8 @@ public sealed class AgentWorkspace : IAsyncDisposable
         Action<ChatOptions>? configureOptions = null,
         string? systemPrompt = null)
     {
+        _logger.LogThreadWarning(_app);
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(Create)}");
         if (_disposed)
         {
             throw new ObjectDisposedException(nameof(AgentWorkspace));
@@ -68,62 +75,57 @@ public sealed class AgentWorkspace : IAsyncDisposable
         {
             throw new InvalidOperationException($"An agent named '{name}' already exists.");
         }
-
-        AgentTab? created = null;
-
-        void Build()
-        {
-            created = BuildTab(
-                profile, 
-                name, 
-                model: model,
-                thinkingLevel: thinkingLevel,
-                configureOptions: configureOptions,
-                systemPrompt: systemPrompt
-            );
-        }
-
-        if (_app is { } app)
-        {
-            app.Invoke(Build);
-        }
-        else
-        {
-            Build();
-        }
-
-        return created;
+        
+        return BuildTab(
+            profile, 
+            name, 
+            model: model,
+            thinkingLevel: thinkingLevel,
+            configureOptions: configureOptions,
+            systemPrompt: systemPrompt
+        );
     }
 
     public void LaunchConfigured()
     {
-        foreach (var definition in _options.Value.Startup)
+        try
         {
-            if (string.IsNullOrWhiteSpace(definition.Name))
+            _logger.LogThreadWarning(_app);
+            using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(LaunchConfigured)}");
+            foreach (var definition in _options.Value.Startup)
             {
-                _logger.LogWarning("Skipping configured agent with no name");
-                continue;
-            }
+                if (string.IsNullOrWhiteSpace(definition.Name))
+                {
+                    _logger.LogWarning("Skipping configured agent with no name");
+                    continue;
+                }
 
-            try
-            {
-                Create(
-                    profile: definition.Profile, 
-                    name: definition.Name, 
-                    model: definition.Model,
-                    thinkingLevel: definition.ThinkingLevel,
-                    systemPrompt: definition.Prompt
-                );
+                try
+                {
+                    Create(
+                        profile: definition.Profile,
+                        name: definition.Name,
+                        model: definition.Model,
+                        thinkingLevel: definition.ThinkingLevel,
+                        systemPrompt: definition.Prompt
+                    );
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Failed to launch configured agent {agent}", definition.Name);
+                }
             }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to launch configured agent {agent}", definition.Name);
-            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to launch configured agents");
         }
     }
 
     public async Task<bool> Remove(string name)
     {
+        _logger.LogThreadWarning(_app);
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(Remove)}");
         if (!_tabsByName.Remove(name, out var tab))
         {
             return false;
@@ -144,6 +146,8 @@ public sealed class AgentWorkspace : IAsyncDisposable
         string? systemPrompt = null
     )
     {
+        _logger.LogThreadWarning(_app);
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(BuildTab)}");
         var session = _factory.CreateSession(
             profile, 
             name, 
@@ -156,12 +160,17 @@ public sealed class AgentWorkspace : IAsyncDisposable
         var messages = new MessageView(_loggerFactory.CreateLogger<MessageView>());
         var stats = new TokenSessionStats(session);
 
-        var tab = new AgentTab(runner, messages, stats);
+        var tab = new AgentTab(runner, messages, stats, _tabLogger);
         _tabsByName.Add(name, tab);
-        _tabs.Add(tab);
-        _tabs.Value = tab;
+        
+        _app?.Invoke(() =>
+        {
+            _tabs.Add(tab);
+            _tabs.Value = tab;
+        });
 
-        runner.RunAsync();
+        _logger.LogThreadWarning(_app);
+        _ = runner.RunAsync();
 
         _logger.LogInformation("Created agent {agent} from profile {profile}", name, profile);
 
@@ -181,6 +190,8 @@ public sealed class AgentWorkspace : IAsyncDisposable
 
     private void OnTabValueChanged(object? sender, ValueChangedEventArgs<View?> e)
     {
+        _logger.LogThreadWarning(_app);
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(OnTabValueChanged)}");
         var active = e.NewValue as AgentTab;
 
         if (ReferenceEquals(active, Active))
@@ -194,6 +205,7 @@ public sealed class AgentWorkspace : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(DisposeAsync)}");
         if (_disposed)
         {
             return;

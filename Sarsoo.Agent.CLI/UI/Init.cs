@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.Session;
+using Terminal.Gui;
 using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Input;
@@ -25,6 +27,7 @@ public class TuiService(
     {
         _appThread = new Thread(StartTui)
         {
+            Name = "UI",
             IsBackground = false,
             Priority = ThreadPriority.Highest
         };
@@ -40,8 +43,10 @@ public class TuiService(
         try
         {
             Terminal.Gui.App.Logging.Logger = tuiLogger;
-
-            logger.LogInformation("Initialising TUI");
+            Terminal.Gui.Tracing.Trace.Backend = new TraceBackend();
+            Terminal.Gui.Tracing.Trace.EnabledCategories = TraceCategory.All;
+            
+            logger.LogInformation("Initialising TUI from thread {}", Environment.CurrentManagedThreadId);
             app.Init();
 
             _cancellationTokenSource.Token.Register(app.RequestStop);
@@ -51,7 +56,7 @@ public class TuiService(
             app.Keyboard.KeyBindings.Remove(Key.Esc);
             app.Keyboard.KeyBindings.Add(Key.C.WithCtrl, Command.Quit);
 
-            workspace.LaunchConfigured();
+            Task.Run(workspace.LaunchConfigured);
 
             app.Run(mainWindow);
 

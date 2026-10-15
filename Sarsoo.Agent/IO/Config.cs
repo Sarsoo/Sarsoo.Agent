@@ -13,7 +13,7 @@ public static class Config
         
         if (baseDir is null)
         {
-            var home = Environment.GetEnvironmentVariable("HOME");
+            var home = Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile);
             
             if (home is { } h)
             {

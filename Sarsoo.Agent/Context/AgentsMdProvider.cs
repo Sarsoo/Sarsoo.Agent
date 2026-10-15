@@ -1,6 +1,7 @@
 using System.Text;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.Observability;
 
 namespace Sarsoo.Agent.Context;
 
@@ -24,6 +25,7 @@ public class AgentsMdProvider : AIContextProvider
         
         private async Task Initialize(ILogger<AgentsMdProvider>? logger, CancellationToken cancellationToken = default)
         {
+            using var trace = Tracing.Source.StartActivity($"{nameof(AgentsMdProvider)}::{nameof(Initialize)}");
             var cwd = Directory.GetCurrentDirectory();
             var root = Directory.GetDirectoryRoot(cwd);
         
@@ -78,6 +80,7 @@ public class AgentsMdProvider : AIContextProvider
 
     protected override async ValueTask<AIContext> ProvideAIContextAsync(InvokingContext context, CancellationToken cancellationToken = default)
     {
+        using var trace = Tracing.Source.StartActivity($"{nameof(AgentsMdProvider)}::{nameof(ProvideAIContextAsync)}");
         var state = _sessionState.GetOrInitializeState(context.Session);
         
         var retContext = new AIContext

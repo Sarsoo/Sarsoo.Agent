@@ -4,6 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.Gate;
 using Sarsoo.Agent.Integrations;
+using Sarsoo.Agent.Observability;
 
 namespace Sarsoo.Agent.Session.Orchestration;
 
@@ -45,6 +46,7 @@ public sealed class AgentSessionRunner : IAsyncDisposable
         get;
         private set
         {
+            using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionRunner)}::{nameof(State)}::Set");
             if (field == value)
             {
                 return;
@@ -64,6 +66,7 @@ public sealed class AgentSessionRunner : IAsyncDisposable
 
     public void Post(ChatMessage message)
     {
+        using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionRunner)}::{nameof(Post)}");
         _logger.LogInformation("Passing message to agent {agent}: {message}", Name, message.Text);
         _userMessages.Writer.TryWrite(message);
     }
@@ -73,9 +76,14 @@ public sealed class AgentSessionRunner : IAsyncDisposable
     /// </summary>
     public Task RunAsync()
     {
-        return _runTask ??= Task.WhenAll(
-            ProcessUserMessages(_cancellationTokenSource.Token),
-            ProcessAgentMessages(_cancellationTokenSource.Token)
+        return _runTask ??= Task.Run(async () =>
+            {
+                using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionRunner)}::{nameof(RunAsync)}");
+                await Task.WhenAll(
+                    ProcessUserMessages(_cancellationTokenSource.Token),
+                    ProcessAgentMessages(_cancellationTokenSource.Token)
+                );
+            }   
         );
     }
 
@@ -89,6 +97,7 @@ public sealed class AgentSessionRunner : IAsyncDisposable
 
             await foreach (var userMessage in _userMessages.Reader.ReadAllAsync(stoppingToken).ConfigureAwait(false))
             {
+                using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionRunner)}::{nameof(ProcessUserMessages)}::UserMessage");
                 _logger.LogInformation("Iterating agent {agent} with user message: {message}", Name, userMessage);
 
                 UserMessage?.Invoke(this, userMessage);
@@ -131,6 +140,7 @@ public sealed class AgentSessionRunner : IAsyncDisposable
                     }
                     else if (content is ToolApprovalRequestContent toolApprovalRequestContent)
                     {
+                        using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionRunner)}::ToolApprovalRequest");
                         // The requesting agent's name is forwarded so the gate can attribute the prompt.
                         State = AgentState.Blocked;
                         var response = await _toolGateEnforcer
@@ -173,6 +183,7 @@ public sealed class AgentSessionRunner : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionRunner)}::{nameof(DisposeAsync)}");
         if (_disposed)
         {
             return;

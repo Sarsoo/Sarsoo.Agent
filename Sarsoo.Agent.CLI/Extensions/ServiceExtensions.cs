@@ -9,6 +9,7 @@ using Sarsoo.Agent.CLI.UI.Chat.Message;
 using Sarsoo.Agent.CLI.UI.Menu;
 using Sarsoo.Agent.CLI.UI.Stats;
 using Sarsoo.Agent.Composition;
+using Sarsoo.Agent.DevOps.Extensions;
 using Sarsoo.Agent.Extensions;
 using Sarsoo.Agent.Gate;
 using Sarsoo.Agent.Session;
@@ -40,6 +41,7 @@ public static class ServiceExtensions
         public IServiceCollection AddAgentSessions(IConfiguration configuration)
         {
             serviceCollection.AddAgent(configuration)
+                .AddDevOpsAgent(configuration)
                 .AddSingleton<AgentWorkspace>();
 
             return serviceCollection;

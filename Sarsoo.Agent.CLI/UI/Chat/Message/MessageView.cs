@@ -1,8 +1,10 @@
+using System.Diagnostics.Metrics;
 using System.Drawing;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Extensions;
+using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
 using Sarsoo.Agent.Extensions;
 using Terminal.Gui.App;
@@ -14,6 +16,17 @@ namespace Sarsoo.Agent.CLI.UI.Chat.Message;
 
 public class MessageView: View
 {
+    private static Counter<int> _updateContentSizes =
+        CliMeter.Meter.CreateCounter<int>("sarsoo.agent.cli.messageview.updatecontentsize.call");
+    private static Counter<int> _subViewLayout =
+        CliMeter.Meter.CreateCounter<int>("sarsoo.agent.cli.messageview.subviewlayout.call");
+    private static Counter<int> _subViewLaidOut =
+        CliMeter.Meter.CreateCounter<int>("sarsoo.agent.cli.messageview.subviewslaidout.call");
+    private static Counter<int> _agentMessageReceived =
+        CliMeter.Meter.CreateCounter<int>("sarsoo.agent.cli.messageview.agentmessage.received");
+    private static Counter<int> _messageReceived =
+        CliMeter.Meter.CreateCounter<int>("sarsoo.agent.cli.messageview.message.added");
+    
     private readonly ILogger<MessageView> _logger;
     private List<BaseMessage> _messages = new();
     private Dictionary<string, List<AgentMessage>> _messageIndex = new();
@@ -79,6 +92,7 @@ public class MessageView: View
     /// </remarks>
     private void EnsureAppMouseHook ()
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(MessageView)}::{nameof(EnsureAppMouseHook)}");
         if (App is not { } app || ReferenceEquals (_mouseHookedApp, app))
         {
             return;
@@ -157,28 +171,44 @@ public class MessageView: View
 
     private void ScrollToBottom () => Viewport = Viewport with { Y = Math.Max (0, GetContentHeight () - Viewport.Height) };
 
-    private void UpdateContentSize ()
+    private void UpdateContentSize()
     {
-        if (SubViews.Count == 0)
+        if (_layoutThrottle.Wait(0))
         {
-            return;
-        }
+            try
+            {
+                using var trace =
+                    CliTracing.Source.StartActivity($"{nameof(MessageView)}::{nameof(UpdateContentSize)}");
+                if (SubViews.Count == 0)
+                {
+                    return;
+                }
 
-        // A base View tracks the Viewport size, so the content area never exceeds
-        // what is visible and scrolling is disabled. Size the content to the
-        // SubViews (floored at the Viewport) so the view can actually scroll.
-        SetContentSize(
-            new Size(
-                Math.Max(Viewport.Width, GetWidthRequiredForSubViews()),
-                Math.Max(Viewport.Height, GetHeightRequiredForSubViews())
-            )
-        );
+                _updateContentSizes.Add(1);
+                // A base View tracks the Viewport size, so the content area never exceeds
+                // what is visible and scrolling is disabled. Size the content to the
+                // SubViews (floored at the Viewport) so the view can actually scroll.
+                SetContentSize(
+                    new Size(
+                        Math.Max(Viewport.Width, GetWidthRequiredForSubViews()),
+                        Math.Max(Viewport.Height, GetHeightRequiredForSubViews())
+                    )
+                );
+            }
+            finally
+            {
+                _layoutThrottle.Release();
+            }
+        }
     }
     
     public void AddAgentMessage(AgentResponseUpdate message)
     {
+        _logger.LogThreadWarning(App);
         if (message is { MessageId: { } })
         {
+            _agentMessageReceived.Add(1);
+            
             if (!_messageIndex.TryGetValue(message.MessageId, out var m))
             {
                 m = new();
@@ -208,6 +238,8 @@ public class MessageView: View
 
     public void AddMessage(BaseMessage message)
     {
+        _logger.LogThreadWarning(App);
+        _messageReceived.Add(1);
         _logger.LogInformation("Adding {message_type} to message view", message.GetType());
         
         if (_messages.LastOrDefault() is { } last)
@@ -222,17 +254,26 @@ public class MessageView: View
         message.ContentChanged += OnMessageContentChanged;
 
         _messages.Add(message);
-        Add(message);
+        
+        App!.Invoke(() =>
+        {
+            Add(message);
+        });
 
         RequestScrollToBottom ();
     }
 
     private void OnMessageContentChanged (object? sender, EventArgs e) => RequestScrollToBottom ();
 
+    private SemaphoreSlim _layoutThrottle = new(1);
+
     /// <inheritdoc/>
     protected override void OnSubViewLayout(LayoutEventArgs args)
     {
+        _subViewLayout.Add(1);
+        using var trace = CliTracing.Source.StartActivity($"{nameof(MessageView)}::{nameof(OnSubViewLayout)}");
         base.OnSubViewLayout(args);
+        
         EnsureAppMouseHook();
         UpdateContentSize();
     }
@@ -245,6 +286,8 @@ public class MessageView: View
     /// </remarks>
     protected override void OnSubViewsLaidOut(LayoutEventArgs args)
     {
+        _subViewLaidOut.Add(1);
+        using var trace = CliTracing.Source.StartActivity($"{nameof(MessageView)}::{nameof(OnSubViewsLaidOut)}");
         base.OnSubViewsLaidOut(args);
 
         if (!_scrollToBottomPending)

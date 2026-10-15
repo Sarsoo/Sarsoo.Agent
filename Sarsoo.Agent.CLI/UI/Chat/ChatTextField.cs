@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.Session;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Drivers;
@@ -49,6 +50,7 @@ public class ChatTextField: Editor
 
     protected override bool OnDrawingContent(DrawContext? context)
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(ChatTextField)}::{nameof(OnDrawingContent)}");
         var ret = base.OnDrawingContent(context);
 
         Cursor = Cursor with
@@ -61,6 +63,7 @@ public class ChatTextField: Editor
 
     private bool? OnEnter()
     {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(ChatTextField)}::{nameof(OnEnter)}");
         var message = Text;
 
         if (!string.IsNullOrWhiteSpace(message))
