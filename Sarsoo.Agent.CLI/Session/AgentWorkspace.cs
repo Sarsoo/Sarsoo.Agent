@@ -162,12 +162,23 @@ public sealed class AgentWorkspace : IAsyncDisposable
 
         var tab = new AgentTab(runner, messages, stats, _tabLogger);
         _tabsByName.Add(name, tab);
-        
-        _app?.Invoke(() =>
+
+        void AddTab()
         {
             _tabs.Add(tab);
             _tabs.Value = tab;
-        });
+        }
+
+        // Register the tab on the UI thread when one is live; otherwise (headless or not-yet-run
+        // application) mutate the tab set inline so the workspace still tracks its active agent.
+        if (_app is { MainThreadId: int mainThreadId } app && mainThreadId != Environment.CurrentManagedThreadId)
+        {
+            app.Invoke(AddTab);
+        }
+        else
+        {
+            AddTab();
+        }
 
         _logger.LogThreadWarning(_app);
         _ = runner.RunAsync();

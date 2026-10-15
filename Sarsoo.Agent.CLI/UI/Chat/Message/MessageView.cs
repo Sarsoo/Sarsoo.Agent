@@ -254,11 +254,19 @@ public class MessageView: View
         message.ContentChanged += OnMessageContentChanged;
 
         _messages.Add(message);
-        
-        App!.Invoke(() =>
+
+        // Adding a SubView must happen on the UI thread. When the caller is already on the
+        // application's main thread (or there is no live main thread, e.g. headless setups that
+        // never start the main loop) add it now; otherwise marshal the add through the
+        // application's timed-events queue.
+        if (App is { MainThreadId: int mainThreadId } app && mainThreadId != Environment.CurrentManagedThreadId)
+        {
+            app.Invoke(() => Add(message));
+        }
+        else
         {
             Add(message);
-        });
+        }
 
         RequestScrollToBottom ();
     }
