@@ -18,23 +18,33 @@ public partial class Tool
         );
     }
 
-    public async Task<ToolResult<V1DeploymentList>> GetDeployments(string contextName, string? @namespace = null)
+    private static IEnumerable<V1Deployment> MapDeployments(V1DeploymentList deployments)
+    {
+        foreach (var deployment in deployments)
+        {
+            deployment.Metadata.ManagedFields = null;
+            yield return deployment;
+        }
+    }
+
+    public async Task<ToolResult<List<V1Deployment>>> GetDeployments(string contextName, string? @namespace = null)
     {
         using var trace = Tracing.Source.StartActivity();
         if (_index.GetClient(contextName) is { } client)
         {
             if (@namespace is { })
             {
-                return await ToolResult<V1DeploymentList>.From(async () => await client.AppsV1.ListNamespacedDeploymentAsync(namespaceParameter: @namespace));
+                return await ToolResult<List<V1Deployment>>.From(async () =>
+                    MapDeployments(await client.AppsV1.ListNamespacedDeploymentAsync(namespaceParameter: @namespace)).ToList());
             }
             else
             {
-                return await ToolResult<V1DeploymentList>.From(async () => await client.AppsV1.ListDeploymentForAllNamespacesAsync());
+                return await ToolResult<List<V1Deployment>>.From(async () => MapDeployments(await client.AppsV1.ListDeploymentForAllNamespacesAsync()).ToList());
             }
         }
         else
         {
-            return ToolResult<V1DeploymentList>.FromError("Context not found");
+            return ToolResult<List<V1Deployment>>.FromError("Context not found");
         }
     }
 }

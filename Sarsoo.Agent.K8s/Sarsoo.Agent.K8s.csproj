@@ -39,6 +39,12 @@
         <Compile Update="Tool.Namespace.cs">
             <DependentUpon>Tool.cs</DependentUpon>
         </Compile>
+        <Compile Update="Tool.Pod.cs">
+          <DependentUpon>Tool.cs</DependentUpon>
+        </Compile>
+        <Compile Update="Tool.Deployments.cs">
+          <DependentUpon>Tool.cs</DependentUpon>
+        </Compile>
     </ItemGroup>
 
 </Project>

@@ -23,7 +23,7 @@ public partial class Tool
         using var trace = Tracing.Source.StartActivity();
         if (_index.GetClient(contextName) is { } client)
         {
-            return await ToolResult<V1Pod>.From(async () => await client.CoreV1.ReadNamespacedPodAsync(name: name, namespaceParameter: @namespace));
+            return await ToolResult<V1Pod>.From(async () => MapPod(await client.CoreV1.ReadNamespacedPodAsync(name: name, namespaceParameter: @namespace)));
         }
         else
         {
@@ -40,23 +40,38 @@ public partial class Tool
         );
     }
 
-    public async Task<ToolResult<V1PodList>> GetPods(string contextName, string? @namespace = null)
+    private IEnumerable<V1Pod> MapPods(V1PodList pods)
+    {
+        foreach (var pod in pods)
+        {
+            yield return MapPod(pod);
+        }
+    }
+    
+    private static V1Pod MapPod(V1Pod pod)
+    {
+        pod.Metadata.ManagedFields = null;
+
+        return pod;
+    }
+
+    public async Task<ToolResult<List<V1Pod>>> GetPods(string contextName, string? @namespace = null)
     {
         using var trace = Tracing.Source.StartActivity();
         if (_index.GetClient(contextName) is { } client)
         {
             if (@namespace is { })
             {
-                return await ToolResult<V1PodList>.From(async () => await client.CoreV1.ListNamespacedPodAsync(namespaceParameter: @namespace));
+                return await ToolResult<List<V1Pod>>.From(async () => MapPods(await client.CoreV1.ListNamespacedPodAsync(namespaceParameter: @namespace)).ToList());
             }
             else
             {
-                return await ToolResult<V1PodList>.From(async () => await client.CoreV1.ListPodForAllNamespacesAsync());
+                return await ToolResult<List<V1Pod>>.From(async () => MapPods(await client.CoreV1.ListPodForAllNamespacesAsync()).ToList());
             }
         }
         else
         {
-            return ToolResult<V1PodList>.FromError("Context not found");
+            return ToolResult<List<V1Pod>>.FromError("Context not found");
         }
     }
 }

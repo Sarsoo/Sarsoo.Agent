@@ -5,11 +5,12 @@ using Sarsoo.Agent.Tool;
 
 namespace Sarsoo.Agent.K8s.IO;
 
-[JsonSourceGenerationOptions()]
-[JsonSerializable(typeof(ToolResult<V1NamespaceList>))]
-[JsonSerializable(typeof(ToolResult<V1DeploymentList>))]
-[JsonSerializable(typeof(ToolResult<V1PodList>))]
+[JsonSourceGenerationOptions(WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(ToolResult<List<V1Namespace>>))]
+[JsonSerializable(typeof(ToolResult<List<V1Deployment>>))]
 [JsonSerializable(typeof(ToolResult<V1Pod>))]
+[JsonSerializable(typeof(ToolResult<List<V1Pod>>))]
+[JsonSerializable(typeof(ToolResult<List<string>>))]
 [JsonSerializable(typeof(IEnumerable<string>))]
 [JsonSerializable(typeof(JsonElement))]
 public partial class K8sJsonContext: JsonSerializerContext
