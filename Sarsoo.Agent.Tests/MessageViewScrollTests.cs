@@ -1,6 +1,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging.Abstractions;
 using Sarsoo.Agent.CLI.UI.Chat.Message;
+using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
 using Terminal.Gui.App;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
@@ -43,7 +44,8 @@ public class MessageViewScrollTests
     {
         using var fixture = new Fixture ();
 
-        fixture.View.Viewport = fixture.View.Viewport with { Y = 0 };
+        // Move away from the bottom the way a user would, so the list stops following content.
+        fixture.View.InvokeCommand (Command.Home);
         fixture.View.Layout ();
 
         var point = InnerPoint (fixture.View, 0);
@@ -90,6 +92,79 @@ public class MessageViewScrollTests
 
         Assert.Equal (leftBefore - 1, fixture.View.Viewport.Y);
         Assert.Equal (rightBefore, second.Viewport.Y);
+    }
+
+    [Fact]
+    public void ContentUpdate_DoesNotStealTheViewport_WhenUserScrolledAway ()
+    {
+        using var fixture = new Fixture ();
+
+        // Grow the list past the viewport, then park the viewport at the top.
+        var message = new TextMessage (new TextContent (string.Join ('\n', Enumerable.Repeat ("line", 40))));
+        fixture.View.AddMessage (message);
+        fixture.App.LayoutAndDraw ();
+
+        fixture.View.InvokeCommand (Command.Home);
+        Assert.Equal (0, fixture.View.Viewport.Y);
+
+        // Streaming more content must not yank the user back to the bottom.
+        for (var i = 0; i < 20; i++)
+        {
+            message.SetContent (new TextContent ("\nmore"));
+        }
+
+        fixture.App.TimedEvents!.RunTimers ();
+
+        if (fixture.View.NeedsLayout)
+        {
+            fixture.View.Layout ();
+        }
+
+        Assert.Equal (0, fixture.View.Viewport.Y);
+
+        // End returns to the bottom and resumes following.
+        fixture.View.InvokeCommand (Command.End);
+        Assert.True (fixture.View.Viewport.Y > 0);
+    }
+
+    [Fact]
+    public void StickyBottom_StaysAtTheBottomAcrossLayoutPasses ()
+    {
+        using var fixture = new Fixture ();
+
+        var expected = Math.Max (0, fixture.View.GetContentHeight () - fixture.View.Viewport.Height);
+        Assert.Equal (expected, fixture.View.Viewport.Y);
+
+        // Note: Terminal.Gui keeps NeedsLayout set on an idle view in this harness (reproduced on the
+        // pre-change code too), so "settled" cannot be asserted via NeedsLayout. What matters for
+        // autoscroll is that repeated passes do not drift the viewport or oscillate.
+        for (var i = 0; i < 3; i++)
+        {
+            fixture.App.TimedEvents!.RunTimers ();
+            fixture.App.LayoutAndDraw ();
+
+            Assert.Equal (expected, fixture.View.Viewport.Y);
+            Assert.Equal (Math.Max (0, fixture.View.GetContentHeight () - fixture.View.Viewport.Height),
+                          fixture.View.Viewport.Y);
+        }
+    }
+
+    [Fact]
+    public void ViewportGrowing_WhileScrolledAway_ClampsToTheLastRow ()
+    {
+        using var fixture = new Fixture ();
+
+        fixture.View.InvokeCommand (Command.Home);
+        fixture.View.InvokeCommand (Command.ScrollDown);
+        fixture.App.LayoutAndDraw ();
+        Assert.Equal (1, fixture.View.Viewport.Y);
+
+        // The terminal grows, so the largest valid scroll offset shrinks below the parked offset.
+        fixture.View.Height = Dim.Absolute (fixture.View.Frame.Height + 100);
+        fixture.App.LayoutAndDraw ();
+
+        var maxY = Math.Max (0, fixture.View.GetContentHeight () - fixture.View.Viewport.Height);
+        Assert.Equal (maxY, fixture.View.Viewport.Y);
     }
 
     private static Point BorderPoint (MessageView view, int index)

@@ -8,7 +8,7 @@ namespace Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
 
 public class TextMessage: AgentMessage<TextContent>
 {
-    private Markdown Markdown = new()
+    private readonly Markdown _markdown = new()
     {
         Text = "",
         Width = Dim.Fill(),
@@ -26,20 +26,19 @@ public class TextMessage: AgentMessage<TextContent>
         Text = string.Empty;
         BorderStyle = LineStyle.Single;
 
-        // The constructor receives the first streamed chunk (MessageView creates the
-        // message from it rather than calling SetContent), so seed the accumulator here.
-        // Otherwise the first chunk is lost when the next chunk overwrites Markdown.Text.
-        _totalMessage = content.ToString() ?? string.Empty;
-        Markdown.Text = _totalMessage;
+        // The base constructor seeds the accumulator with the first streamed chunk (MessageView
+        // creates the message from it rather than calling SetContent), so render from there.
+        // Otherwise the first chunk is lost when the next chunk overwrites the markdown text.
+        _markdown.Text = AccumulatedText;
 
-        Markdown.ViewportSettings &= ~ViewportSettingsFlags.HasVerticalScrollBar;
-        Markdown.ContentSizeChanged += (sender, args) =>
+        _markdown.ViewportSettings &= ~ViewportSettingsFlags.HasVerticalScrollBar;
+        _markdown.ContentSizeChanged += (sender, args) =>
         {
             // Height is the frame size, which includes adornments; GetContentHeight() only
             // reports the viewport content height. Without the adornment thickness the last
             // rows of the message are clipped by the border.
-            Height = Markdown.GetContentHeight() + GetAdornmentsThickness().Vertical;
-            Markdown.SetNeedsDraw();
+            Height = _markdown.GetContentHeight() + GetAdornmentsThickness().Vertical;
+            _markdown.SetNeedsDraw();
             SetNeedsDraw();
             ScheduleRelayout();
         };
@@ -55,7 +54,20 @@ public class TextMessage: AgentMessage<TextContent>
             }
         };
         
-        Add(Markdown);
+        Add(_markdown);
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    ///     Runs at most once per <see cref="BaseMessage.UpdateInterval"/> on the UI thread regardless
+    ///     of how fast the agent streams chunks, so the whole-document Markdown reparse that
+    ///     <see cref="Markdown.Text"/> triggers is rate-limited to the frame rate.
+    /// </remarks>
+    protected override void ApplyContentUpdate ()
+    {
+        _markdown.Text = AccumulatedText;
+        _markdown.SetNeedsDraw();
+        SetNeedsDraw();
     }
 
     private IApplication? _relayoutApp;
@@ -96,30 +108,5 @@ public class TextMessage: AgentMessage<TextContent>
 
             return false;
         });
-    }
-    
-    private string _totalMessage = string.Empty;
-    private readonly Lock _messageLock = new();
-    public override void SetContent(TextContent content)
-    {
-        Content = content;
-
-        var c = content.ToString();
-        if (!string.IsNullOrEmpty(c))
-        {
-            string toSet;
-            lock (_messageLock)
-            {
-                _totalMessage += c;
-                toSet = _totalMessage;
-            }
-            App?.Invoke(() =>
-                {
-                    Markdown.Text = toSet;
-                    Markdown.SetNeedsDraw();
-                    SetNeedsDraw();
-                }
-            );
-        }
     }
 }

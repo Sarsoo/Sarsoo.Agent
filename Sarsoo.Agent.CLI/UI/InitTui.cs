@@ -46,11 +46,13 @@ public static class InitTui
             .WithTracing(o =>
             {
                 o.AddSource("Sarsoo.*");
+                o.AddSource("Terminal.Gui*");
                 Tracing.SetExceptionHandlers();
             })
             .WithMetrics(o =>
             {
                 o.AddMeter("Sarsoo.*");
+                o.AddMeter("Terminal.Gui*");
                 o.AddRuntimeInstrumentation();
             });
 

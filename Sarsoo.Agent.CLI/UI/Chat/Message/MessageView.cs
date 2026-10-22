@@ -30,7 +30,13 @@ public class MessageView: View
     private readonly ILogger<MessageView> _logger;
     private List<BaseMessage> _messages = new();
     private Dictionary<string, List<AgentMessage>> _messageIndex = new();
-    private bool _scrollToBottomPending;
+
+    /// <summary>
+    ///     Whether new content should keep the viewport pinned to the bottom. Cleared when the user
+    ///     scrolls away and restored when they return to the bottom (or a message is added).
+    /// </summary>
+    private bool _stickToBottom = true;
+
     private IApplication? _mouseHookedApp;
     
     public MessageView(ILogger<MessageView> logger)
@@ -56,13 +62,19 @@ public class MessageView: View
         // Allow scroll commands from SubViews/adornment SubViews to bubble here
         CommandsToBubbleUp = [Command.ScrollUp, Command.ScrollDown];
 
-        // Add command handlers
-        AddCommand (Command.ScrollUp, () => { ScrollVertical (-1); return true; });
-        AddCommand (Command.ScrollDown, () => { ScrollVertical (1); return true; });
-        AddCommand (Command.PageUp, () => { ScrollVertical (-GetContainerSize().Height); return true; });
-        AddCommand (Command.PageDown, () => { ScrollVertical (GetContainerSize().Height); return true; });
-        AddCommand (Command.Home, () => { Viewport = Viewport with { Y = 0 }; return true; });
-        AddCommand (Command.End, () => { ScrollToBottom (); return true; });
+        // Add command handlers. Any manual scroll records whether the user left the bottom, so
+        // autoscroll resumes only when they come back to it.
+        AddCommand (Command.ScrollUp, () => ScrollBy (-1));
+        AddCommand (Command.ScrollDown, () => ScrollBy (1));
+        AddCommand (Command.PageUp, () => ScrollBy (-GetContainerSize().Height));
+        AddCommand (Command.PageDown, () => ScrollBy (GetContainerSize().Height));
+        AddCommand (Command.Home, () => ScrollTo (0));
+        AddCommand (Command.End, () =>
+                                      {
+                                          ScrollToBottom ();
+
+                                          return true;
+                                      });
 
         Disposing += (_, _) =>
                      {
@@ -72,6 +84,40 @@ public class MessageView: View
                              _mouseHookedApp = null;
                          }
                      };
+    }
+
+    private bool ScrollBy (int rows)
+    {
+        ScrollVertical (rows);
+        UpdateStickiness ();
+
+        return true;
+    }
+
+    private bool ScrollTo (int y)
+    {
+        Viewport = Viewport with { Y = y };
+        UpdateStickiness ();
+
+        return true;
+    }
+
+    /// <summary>True when the last row of content is visible.</summary>
+    private bool IsAtBottom => Viewport.Y >= Math.Max (0, GetContentHeight () - Viewport.Height);
+
+    private void UpdateStickiness () => _stickToBottom = IsAtBottom;
+
+    private void ScrollToBottom ()
+    {
+        _stickToBottom = true;
+        int target = Math.Max (0, GetContentHeight () - Viewport.Height);
+
+        // Assigning the same position is not guaranteed to be a no-op in the framework; comparing
+        // first keeps a post-layout scroll from re-arming layout every pass while content streams.
+        if (Viewport.Y != target)
+        {
+            Viewport = Viewport with { Y = target };
+        }
     }
 
     /// <summary>
@@ -152,52 +198,44 @@ public class MessageView: View
             return;
         }
 
-        ScrollVertical (delta);
+        ScrollBy (delta);
         mouse.Handled = true;
     }
 
-    /// <summary>
-    ///     Requests that the viewport scroll to the bottom of the message view once the next layout
-    ///     pass has applied the new content size. Safe to call from any thread.
-    /// </summary>
-    public void RequestScrollToBottom ()
+    private void UpdateContentSize ()
     {
-        App?.Invoke (() =>
+        using var trace = CliTracing.Source.StartActivity($"{nameof(MessageView)}::{nameof(UpdateContentSize)}");
+
+        if (SubViews.Count == 0)
         {
-            _scrollToBottomPending = true;
-            SetNeedsLayout ();
-        });
-    }
+            return;
+        }
 
-    private void ScrollToBottom () => Viewport = Viewport with { Y = Math.Max (0, GetContentHeight () - Viewport.Height) };
+        _updateContentSizes.Add(1);
 
-    private void UpdateContentSize()
-    {
-        if (_layoutThrottle.Wait(0))
+        // Messages form a single stacked column: each message's Y is Pos.Bottom(previous), so the
+        // last message's bottom edge is the content height. Reading the laid-out frame avoids an
+        // O(messages) Dim.Auto walk over every subview on every layout pass. Only valid once the
+        // subviews have been laid out, which is why this is called from OnSubViewsLaidOut and not
+        // from OnSubViewLayout.
+        int contentHeight = _messages.Count == 0 ? 0 : _messages[^1].Frame.Bottom;
+
+        // A base View tracks the Viewport size, so the content area never exceeds what is visible
+        // and scrolling is disabled. Size the content to the messages (floored at the Viewport) so
+        // the view can actually scroll. The content width tracks the viewport because messages are
+        // Dim.Fill.
+        SetContentSize(new Size(Viewport.Width, Math.Max(Viewport.Height, contentHeight)));
+
+        // A content size change does not re-clamp the viewport, so a viewport parked past the end
+        // (e.g. the terminal grew while the user was scrolled away) would show blank rows. Clamp it
+        // here rather than relying on a later Viewport assignment.
+        if (!_stickToBottom)
         {
-            try
-            {
-                using var trace =
-                    CliTracing.Source.StartActivity($"{nameof(MessageView)}::{nameof(UpdateContentSize)}");
-                if (SubViews.Count == 0)
-                {
-                    return;
-                }
+            int maxY = Math.Max (0, GetContentHeight () - Viewport.Height);
 
-                _updateContentSizes.Add(1);
-                // A base View tracks the Viewport size, so the content area never exceeds
-                // what is visible and scrolling is disabled. Size the content to the
-                // SubViews (floored at the Viewport) so the view can actually scroll.
-                SetContentSize(
-                    new Size(
-                        Math.Max(Viewport.Width, GetWidthRequiredForSubViews()),
-                        Math.Max(Viewport.Height, GetHeightRequiredForSubViews())
-                    )
-                );
-            }
-            finally
+            if (Viewport.Y > maxY)
             {
-                _layoutThrottle.Release();
+                Viewport = Viewport with { Y = maxY };
             }
         }
     }
@@ -261,19 +299,26 @@ public class MessageView: View
         // application's timed-events queue.
         if (App is { MainThreadId: int mainThreadId } app && mainThreadId != Environment.CurrentManagedThreadId)
         {
-            app.Invoke(() => Add(message));
+            app.Invoke(AddToView);
         }
         else
         {
-            Add(message);
+            AddToView();
         }
 
-        RequestScrollToBottom ();
+        void AddToView ()
+        {
+            // A new message returns the view to the bottom even if the user had scrolled away.
+            _stickToBottom = true;
+            Add(message);
+        }
     }
 
-    private void OnMessageContentChanged (object? sender, EventArgs e) => RequestScrollToBottom ();
-
-    private SemaphoreSlim _layoutThrottle = new(1);
+    /// <summary>
+    ///     Handling for <see cref="BaseMessage.ContentChanged"/>, which is raised on the UI thread
+    ///     after a coalesced content update has been applied to the message.
+    /// </summary>
+    private void OnMessageContentChanged (object? sender, EventArgs e) => SetNeedsLayout ();
 
     /// <inheritdoc/>
     protected override void OnSubViewLayout(LayoutEventArgs args)
@@ -283,14 +328,14 @@ public class MessageView: View
         base.OnSubViewLayout(args);
         
         EnsureAppMouseHook();
-        UpdateContentSize();
     }
 
     /// <inheritdoc/>
     /// <remarks>
-    ///     Runs after SubViews have been laid out, so message heights reflect any content that was
-    ///     just rendered (Markdown rebuilds lazily during layout). This is where a pending scroll
-    ///     request can safely be honoured.
+    ///     Runs after SubViews have been laid out, so message heights and positions are final and
+    ///     the content size — and therefore where the bottom is — is accurate in this pass. This is
+    ///     the only place the content size is measured; measuring it earlier (in
+    ///     <see cref="OnSubViewLayout"/>) read stale heights and doubled the work per layout.
     /// </remarks>
     protected override void OnSubViewsLaidOut(LayoutEventArgs args)
     {
@@ -298,15 +343,13 @@ public class MessageView: View
         using var trace = CliTracing.Source.StartActivity($"{nameof(MessageView)}::{nameof(OnSubViewsLaidOut)}");
         base.OnSubViewsLaidOut(args);
 
-        if (!_scrollToBottomPending)
-        {
-            return;
-        }
-
-        _scrollToBottomPending = false;
-
-        // Re-read the content size now that SubViews have their final heights, then scroll.
         UpdateContentSize();
-        ScrollToBottom ();
+
+        // Safe to set the viewport here: the view clamps it to the content size, and a repeat of
+        // the same position is a no-op, so this converges after one pass.
+        if (_stickToBottom)
+        {
+            ScrollToBottom ();
+        }
     }
 }
