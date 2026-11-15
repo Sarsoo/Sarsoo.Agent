@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -23,19 +23,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.Agents.AI.Abstractions" Version="1.24.0" />
-      <PackageReference Include="Microsoft.Agents.AI.Harness" Version="1.24.0" />
+      <PackageReference Include="Microsoft.Agents.AI.Abstractions" Version="1.28.0" />
+      <PackageReference Include="Microsoft.Agents.AI.Harness" Version="1.28.0" />
       <PackageReference Include="Microsoft.Agents.AI.Hosting.OpenAI" Version="1.24.0-alpha.261006.1" />
       <PackageReference Include="Microsoft.Agents.AI.LocalCodeAct" Version="1.24.0-preview.261006.1" />
-      <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.24.0" />
+      <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.28.0" />
       <PackageReference Include="Microsoft.Agents.AI.Tools.Shell" Version="1.24.0-preview.261006.1" />
-      <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.10.1" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.12" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
-      <PackageReference Include="Microsoft.Extensions.Diagnostics.Abstractions" Version="10.0.12" />
-      <PackageReference Include="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.12" />
-      <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.12" />
-      <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
+      <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="11.0.0" />
     </ItemGroup>
 
 </Project>

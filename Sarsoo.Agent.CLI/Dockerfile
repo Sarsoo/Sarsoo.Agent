@@ -1,5 +1,5 @@
 ﻿# syntax=docker/dockerfile:1
-FROM mcr.microsoft.com/dotnet/sdk:10.0-resolute-aot AS build
+FROM mcr.microsoft.com/dotnet/sdk:11.0-resolute-aot AS build
 
 WORKDIR /source
 ARG BUILD_CONFIGURATION=Release
@@ -17,7 +17,7 @@ RUN dotnet publish "./Sarsoo.Agent.CLI.csproj" -c $BUILD_CONFIGURATION -o /app/p
     && rm -f /app/publish/*.dbg /app/publish/*.Development.json
 
 # Final stage/image
-FROM mcr.microsoft.com/dotnet/runtime-deps:10.0-resolute
+FROM mcr.microsoft.com/dotnet/runtime-deps:11.0-resolute
 WORKDIR /app
 COPY --link --from=publish /app/publish/reeve /app/
 USER $APP_UID
