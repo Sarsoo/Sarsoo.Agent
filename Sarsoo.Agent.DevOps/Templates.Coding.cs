@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.K8s.Extensions;
 using Sarsoo.Agent.Session;
+using Sarsoo.Agent.Tool;
 
 namespace Sarsoo.Agent.DevOps;
 
@@ -42,7 +43,10 @@ public static partial class Templates
                                   """)
                 .WithAdvisor()
                 .WithAgentsMd()
-                .WithKubernetesToolsReadOnly()
+                // .WithKubernetesToolsReadOnly()
+                .WithFunction(new CommandTool("aws").AsFunction())
+                .WithFunction(new CommandTool("gcx").AsFunction())
+                .WithFunction(new CommandTool("kubectl").AsFunction())
                 .WithSkills();
     }
 }
