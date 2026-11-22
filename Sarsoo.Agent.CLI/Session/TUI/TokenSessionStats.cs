@@ -1,7 +1,7 @@
 using Sarsoo.Agent.Session;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.Session;
+namespace Sarsoo.Agent.CLI.Session.TUI;
 
 public class TokenSessionStats(AgentSessionContext session): ITableSource
 {

@@ -1,13 +1,13 @@
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Observability;
-using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.Session.TUI;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Editor;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 
-namespace Sarsoo.Agent.CLI.UI.Chat;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat;
 
 public class ChatTextField: Editor
 {

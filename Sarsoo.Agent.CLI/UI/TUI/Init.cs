@@ -1,14 +1,12 @@
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Observability;
-using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.Session.TUI;
 using Terminal.Gui;
 using Terminal.Gui.App;
-using Terminal.Gui.Configuration;
 using Terminal.Gui.Input;
 
-namespace Sarsoo.Agent.CLI.UI;
+namespace Sarsoo.Agent.CLI.UI.TUI;
 
 public class TuiService(
     IApplication app, 

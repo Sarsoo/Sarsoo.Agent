@@ -2,12 +2,14 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.Session.Inline;
+using Sarsoo.Agent.CLI.Session.TUI;
 using Sarsoo.Agent.CLI.UI;
-using Sarsoo.Agent.CLI.UI.Chat;
-using Sarsoo.Agent.CLI.UI.Chat.Message;
-using Sarsoo.Agent.CLI.UI.Menu;
-using Sarsoo.Agent.CLI.UI.Stats;
+using Sarsoo.Agent.CLI.UI.Inline;
+using Sarsoo.Agent.CLI.UI.TUI;
+using Sarsoo.Agent.CLI.UI.TUI.Chat;
+using Sarsoo.Agent.CLI.UI.TUI.Menu;
+using Sarsoo.Agent.CLI.UI.TUI.Stats;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.DevOps.Extensions;
 using Sarsoo.Agent.Extensions;
@@ -21,7 +23,7 @@ public static class ServiceExtensions
 {
     extension(IServiceCollection serviceCollection)
     {
-        public IServiceCollection AddUi()
+        public IServiceCollection AddTui()
         {
             serviceCollection.AddHostedService<TuiService>()
 
@@ -33,16 +35,25 @@ public static class ServiceExtensions
                 
                 .AddSingleton<ChatView>()
                 .AddSingleton<StatsSideBarView>()
-                .AddSingleton<ChatTextField>();
+                .AddSingleton<ChatTextField>()
+
+                .AddSingleton<AgentWorkspace>();
             
+            return serviceCollection;
+        }
+        public IServiceCollection AddInlineUi()
+        {
+            serviceCollection.AddHostedService<InlineService>()
+                .AddSingleton<TerminalDispatcher>()
+                .AddHostedService<TestInjection>();
+
             return serviceCollection;
         }
         
         public IServiceCollection AddAgentSessions(IConfiguration configuration)
         {
             serviceCollection.AddAgent(configuration)
-                .AddDevOpsAgent(configuration)
-                .AddSingleton<AgentWorkspace>();
+                .AddDevOpsAgent(configuration);
 
             return serviceCollection;
         }

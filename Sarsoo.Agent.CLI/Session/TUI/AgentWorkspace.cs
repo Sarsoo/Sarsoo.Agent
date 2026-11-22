@@ -3,14 +3,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Sarsoo.Agent.CLI.Extensions;
 using Sarsoo.Agent.CLI.Observability;
-using Sarsoo.Agent.CLI.UI.Chat.Message;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.Options;
 using Terminal.Gui.App;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.Session;
+namespace Sarsoo.Agent.CLI.Session.TUI;
 
 /// <summary>
 ///     Owns the set of running agents and the tabs that display them. This is the single registry

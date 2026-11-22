@@ -2,7 +2,7 @@ using Microsoft.Extensions.AI;
 using Sarsoo.Agent.Content;
 using Sarsoo.Agent.Extensions;
 
-namespace Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 
 public interface IAgentMessage
 {

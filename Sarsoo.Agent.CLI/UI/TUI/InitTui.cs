@@ -1,5 +1,5 @@
+using System.CommandLine;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog.Config;
@@ -10,10 +10,10 @@ using OpenTelemetry.Metrics;
 using Sarsoo.Agent.CLI.Extensions;
 using Sarsoo.Agent.IO;
 using Sarsoo.Agent.Observability;
-using Terminal.Gui.App;
 using Terminal.Gui.Configuration;
+using Terminal.Gui.Drawing;
 
-namespace Sarsoo.Agent.CLI.UI;
+namespace Sarsoo.Agent.CLI.UI.TUI;
 
 public static class InitTui
 {
@@ -56,10 +56,40 @@ public static class InitTui
                 o.AddRuntimeInstrumentation();
             });
 
-        host.Services.AddUi().AddAgentSessions(host.Configuration);
+        host.Services.AddTui().AddAgentSessions(host.Configuration);
 
         // Add the TUI init service last because it blocks the main thread
         // host.Services;
         return host.Build();
+    }
+
+    public static async Task CommandAction(string[] args, Option<bool> themeOption, ParseResult pr, CancellationToken ct)
+    {
+        if (pr.GetValue(themeOption))
+        {
+            PrintThemeInfo();
+
+            return;
+        }
+
+        var host = GetTuiHost(args);
+
+        ct.Register(() =>
+        {
+            host.StopAsync(ct);
+        });
+
+        await host.RunAsync(ct);
+    }
+
+    static void PrintThemeInfo()
+    {
+        // Touching a Terminal.Gui type loads the assembly, which runs its module initializer and
+        // applies the theme config (including this app's embedded config.json).
+        Scheme baseScheme = SchemeManager.GetScheme(Schemes.Base);
+
+        Console.WriteLine($"Theme:     {ThemeManager.GetCurrentThemeName()}");
+        Console.WriteLine($"Available: {string.Join(", ", ThemeManager.GetThemeNames())}");
+        Console.WriteLine($"Base:      fg={baseScheme.Normal.Foreground} bg={baseScheme.Normal.Background}");
     }
 }

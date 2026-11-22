@@ -1,13 +1,13 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging.Abstractions;
-using Sarsoo.Agent.CLI.UI.Chat.Message;
-using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
 using Terminal.Gui.App;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 using System.Drawing;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 
 namespace Sarsoo.Agent.Tests;
 

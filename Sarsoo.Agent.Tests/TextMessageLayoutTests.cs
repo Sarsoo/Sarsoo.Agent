@@ -1,7 +1,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging.Abstractions;
-using Sarsoo.Agent.CLI.UI.Chat.Message;
-using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 using Terminal.Gui.App;
 using Terminal.Gui.Drivers;
 using Terminal.Gui.Drawing;

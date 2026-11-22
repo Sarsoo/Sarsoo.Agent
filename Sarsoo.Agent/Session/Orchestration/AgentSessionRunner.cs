@@ -58,6 +58,8 @@ public sealed class AgentSessionRunner : IAsyncDisposable
         }
     } = AgentState.Idle;
 
+    public ToolApprovalRequestContent? CurrentToolRequest { get; private set; }
+
     public event EventHandler<ChatMessage>? UserMessage;
     public event EventHandler<AgentResponseUpdate>? AgentMessage;
     public event EventHandler<AgentState>? StateChanged;
@@ -143,10 +145,15 @@ public sealed class AgentSessionRunner : IAsyncDisposable
                         using var trace = Tracing.Source.StartActivity($"{nameof(AgentSessionRunner)}::ToolApprovalRequest");
                         // The requesting agent's name is forwarded so the gate can attribute the prompt.
                         State = AgentState.Blocked;
+                        CurrentToolRequest = toolApprovalRequestContent;
+
                         var response = await _toolGateEnforcer
                             .Request(toolApprovalRequestContent, Name, stoppingToken)
                             .ConfigureAwait(false);
+
+                        CurrentToolRequest = null;
                         State = AgentState.Idle;
+
                         _userMessages.Writer.TryWrite(new ChatMessage(ChatRole.System, [response]));
                     }
                 }

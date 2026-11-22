@@ -5,14 +5,14 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Extensions;
 using Sarsoo.Agent.CLI.Observability;
-using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 using Sarsoo.Agent.Extensions;
 using Terminal.Gui.App;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.UI.Chat.Message;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
 
 public class MessageView: View
 {

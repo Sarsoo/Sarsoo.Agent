@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Sarsoo.Agent.Advisor;
-using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.Session.TUI;
 using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.Gate;

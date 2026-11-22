@@ -1,11 +1,11 @@
 using Sarsoo.Agent.CLI.Observability;
-using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.Session.TUI;
 using Sarsoo.Agent.Session;
 using Sarsoo.Agent.Session.Orchestration;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.UI;
+namespace Sarsoo.Agent.CLI.UI.TUI;
 
 public class AppStatusBar: StatusBar
 {

@@ -2,7 +2,7 @@ using System.Globalization;
 using Microsoft.Extensions.AI;
 using Terminal.Gui.Drawing;
 
-namespace Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 
 public class FunctionResultMessage: AgentMessage<FunctionResultContent>
 {

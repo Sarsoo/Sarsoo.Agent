@@ -1,14 +1,14 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Observability;
-using Sarsoo.Agent.CLI.UI.Chat.Tool;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Tool;
 using Sarsoo.Agent.Gate;
 using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.Session;
+namespace Sarsoo.Agent.CLI.Session.TUI;
 
 public class ToolCallPrompter(IApplication app, ILogger<ToolCallPrompter> logger): IToolGate
 {

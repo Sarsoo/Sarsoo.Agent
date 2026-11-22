@@ -2,7 +2,7 @@ using Microsoft.Extensions.AI;
 using Sarsoo.Agent.Extensions;
 using Terminal.Gui.Drawing;
 
-namespace Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 
 public class FunctionCallMessage: AgentMessage<FunctionCallContent>
 {

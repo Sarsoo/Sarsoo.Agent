@@ -5,7 +5,7 @@ using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 
-namespace Sarsoo.Agent.CLI.UI.Chat.Message;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
 
 public class BaseMessage: View
 {

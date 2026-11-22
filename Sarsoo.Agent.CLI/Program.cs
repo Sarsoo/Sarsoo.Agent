@@ -1,8 +1,7 @@
 ﻿using System.CommandLine;
-using Microsoft.Extensions.Hosting;
 using Sarsoo.Agent.CLI.UI;
-using Terminal.Gui.Configuration;
-using Terminal.Gui.Drawing;
+using Sarsoo.Agent.CLI.UI.TUI;
+using Sarsoo.Agent.CLI.UI.Inline;
 
 Logging.InitLogging();
 
@@ -14,34 +13,14 @@ Option<bool> themeInfoOption = new("--theme-info")
 RootCommand rootCommand = new("Sarsoo Agent");
 rootCommand.Options.Add(themeInfoOption);
 
+// rootCommand.SetAction(async (pr, ct) =>
+// {
+//     await InitTui.CommandAction(args, themeInfoOption, pr, ct);
+// });
+
 rootCommand.SetAction(async (pr, ct) =>
 {
-    if (pr.GetValue(themeInfoOption))
-    {
-        PrintThemeInfo();
-
-        return;
-    }
-
-    var host = InitTui.GetTuiHost(args);
-
-    ct.Register(() =>
-    {
-        host.StopAsync(ct);
-    });
-
-    await host.RunAsync(ct);
+    await InitInline.CommandAction(args, pr, ct);
 });
 
 return await rootCommand.Parse(args).InvokeAsync();
-
-static void PrintThemeInfo()
-{
-    // Touching a Terminal.Gui type loads the assembly, which runs its module initializer and
-    // applies the theme config (including this app's embedded config.json).
-    Scheme baseScheme = SchemeManager.GetScheme(Schemes.Base);
-
-    Console.WriteLine($"Theme:     {ThemeManager.GetCurrentThemeName()}");
-    Console.WriteLine($"Available: {string.Join(", ", ThemeManager.GetThemeNames())}");
-    Console.WriteLine($"Base:      fg={baseScheme.Normal.Foreground} bg={baseScheme.Normal.Background}");
-}

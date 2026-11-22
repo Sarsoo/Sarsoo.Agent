@@ -4,7 +4,7 @@ using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 
 public class TextMessage: AgentMessage<TextContent>
 {

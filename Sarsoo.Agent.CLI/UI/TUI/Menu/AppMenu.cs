@@ -1,8 +1,8 @@
-using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.Session.TUI;
 using Sarsoo.Agent.Composition;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.UI.Menu;
+namespace Sarsoo.Agent.CLI.UI.TUI.Menu;
 
 public class AppMenu: MenuBar
 {

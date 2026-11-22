@@ -1,8 +1,9 @@
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
 using Sarsoo.Agent.CLI.UI;
-using Sarsoo.Agent.CLI.UI.Chat.Message;
-using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
+using Sarsoo.Agent.CLI.UI.TUI;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 using Terminal.Gui.Configuration;
 using Terminal.Gui.Drawing;
 

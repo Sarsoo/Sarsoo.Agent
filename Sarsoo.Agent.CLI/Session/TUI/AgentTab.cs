@@ -3,12 +3,12 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Extensions;
 using Sarsoo.Agent.CLI.Observability;
-using Sarsoo.Agent.CLI.UI.Chat.Message;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
 using Sarsoo.Agent.Session;
 using Sarsoo.Agent.Session.Orchestration;
 using Terminal.Gui.ViewBase;
 
-namespace Sarsoo.Agent.CLI.Session;
+namespace Sarsoo.Agent.CLI.Session.TUI;
 
 /// <summary>
 ///     The UI unit for a single agent: a tab that hosts the agent's message view and binds the

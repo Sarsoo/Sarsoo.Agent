@@ -1,6 +1,6 @@
 using System.Text;
 using Microsoft.Extensions.AI;
-using Sarsoo.Agent.CLI.UI.Chat.Message.Agent;
+using Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 
 namespace Sarsoo.Agent.Tests;
 

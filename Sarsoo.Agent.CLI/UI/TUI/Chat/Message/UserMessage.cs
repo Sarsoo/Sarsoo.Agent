@@ -1,6 +1,6 @@
 using Microsoft.Extensions.AI;
 
-namespace Sarsoo.Agent.CLI.UI.Chat.Message;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
 
 public class UserMessage: BaseMessage
 {

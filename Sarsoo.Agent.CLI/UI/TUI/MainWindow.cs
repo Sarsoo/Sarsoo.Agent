@@ -1,12 +1,11 @@
-using Sarsoo.Agent.CLI.UI.Chat;
-using Sarsoo.Agent.CLI.UI.Menu;
-using Sarsoo.Agent.CLI.UI.Stats;
+using Sarsoo.Agent.CLI.UI.TUI.Chat;
+using Sarsoo.Agent.CLI.UI.TUI.Menu;
+using Sarsoo.Agent.CLI.UI.TUI.Stats;
 using Terminal.Gui.Drawing;
-using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.UI;
+namespace Sarsoo.Agent.CLI.UI.TUI;
 
 public class MainWindow: Window
 {

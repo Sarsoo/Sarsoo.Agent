@@ -1,10 +1,10 @@
 using Sarsoo.Agent.CLI.Observability;
-using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.Session.TUI;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.UI.Stats;
+namespace Sarsoo.Agent.CLI.UI.TUI.Stats;
 
 public class StatsSideBarView: View
 {

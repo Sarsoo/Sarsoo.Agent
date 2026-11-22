@@ -1,9 +1,8 @@
-using Sarsoo.Agent.CLI.Session;
+using Sarsoo.Agent.CLI.Session.TUI;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
-using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.UI.Chat;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat;
 
 public class ChatView: View
 {

@@ -1,12 +1,10 @@
 using Microsoft.Extensions.AI;
-using Sarsoo.Agent.CLI.Session;
 using Sarsoo.Agent.Extensions;
-using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
-namespace Sarsoo.Agent.CLI.UI.Chat.Tool;
+namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Tool;
 
 public class ToolApproval: View
 {
