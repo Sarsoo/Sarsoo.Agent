@@ -1,4 +1,4 @@
-namespace Sarsoo.Agent.Tool;
+namespace Sarsoo.Agent.Tool.Policy;
 
 public record struct CommandValidationResult(bool Permitted, string? Reason);
 

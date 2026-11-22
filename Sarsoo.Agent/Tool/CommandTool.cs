@@ -2,10 +2,11 @@ using System.Text.Json;
 using CliWrap;
 using CliWrap.Buffered;
 using Microsoft.Extensions.AI;
+using Sarsoo.Agent.Tool.Policy;
 
 namespace Sarsoo.Agent.Tool;
 
-public class CommandTool
+public partial class CommandTool
 {
     private readonly string _command;
     private readonly ICommandPolicy? _policy;
@@ -18,26 +19,29 @@ public class CommandTool
 
     public async Task<string> Run(List<string> argv)
     {
-        if (_policy is not null)
+        try
         {
-            var policyResult = _policy.IsPermitted(argv);
-            if (!policyResult.Permitted)
+            if (_policy is not null)
             {
-                if (!string.IsNullOrWhiteSpace(policyResult.Reason))
+                var policyResult = _policy.IsPermitted(argv);
+                if (!policyResult.Permitted)
                 {
-                    return $"{_command} cannot be run with those arguments, blocked by policy: {policyResult.Reason}";
+                    if (!string.IsNullOrWhiteSpace(policyResult.Reason))
+                    {
+                        return
+                            $"{_command} cannot be run with those arguments, blocked by policy: {policyResult.Reason}";
+                    }
+
+                    return $"{_command} cannot be run with those arguments, blocked by policy";
                 }
-
-                return $"{_command} cannot be run with those arguments, blocked by policy";
             }
-        }
 
-        var wrapped = await Cli.Wrap(_command)
-            .WithArguments(argv)
-            .WithValidation(CommandResultValidation.None)
-            .ExecuteBufferedAsync();
+            var wrapped = await Cli.Wrap(_command)
+                .WithArguments(argv)
+                .WithValidation(CommandResultValidation.None)
+                .ExecuteBufferedAsync();
 
-        var result = $@"
+            return $@"
 <command>
 <output>
 <standard-output>
@@ -52,8 +56,20 @@ public class CommandTool
 <execution-time>{wrapped.RunTime}</execution-time>
 </command>
 ";
-
-        return result;
+        }
+        catch (Exception e)
+        {
+            return $@"
+<command>
+<error>
+Tool failed to execute
+</error>
+<exception>
+{e.Message}
+</exception>
+</command>
+";
+        }
     }
 
     public AIFunction AsFunction()

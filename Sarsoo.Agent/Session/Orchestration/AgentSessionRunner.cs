@@ -15,8 +15,15 @@ namespace Sarsoo.Agent.Session.Orchestration;
 /// </summary>
 public sealed class AgentSessionRunner : IAsyncDisposable
 {
-    private readonly Channel<ChatMessage> _userMessages = Channel.CreateUnbounded<ChatMessage>();
-    private readonly Channel<AgentResponseUpdate> _agentMessages = Channel.CreateUnbounded<AgentResponseUpdate>();
+    private readonly Channel<ChatMessage> _userMessages = Channel.CreateUnbounded<ChatMessage>(new()
+    {
+        SingleReader = true
+    });
+    private readonly Channel<AgentResponseUpdate> _agentMessages = Channel.CreateUnbounded<AgentResponseUpdate>(new()
+    {
+        SingleWriter = true,
+        SingleReader = true
+    });
     private readonly CancellationTokenSource _cancellationTokenSource = new();
     private readonly IToolGateEnforcer _toolGateEnforcer;
     private readonly IEnumerable<IStateChangeReceiver> _stateChangeReceivers;
@@ -84,7 +91,7 @@ public sealed class AgentSessionRunner : IAsyncDisposable
                 await Task.WhenAll(
                     ProcessUserMessages(_cancellationTokenSource.Token),
                     ProcessAgentMessages(_cancellationTokenSource.Token)
-                );
+                ).ConfigureAwait(false);
             }   
         );
     }

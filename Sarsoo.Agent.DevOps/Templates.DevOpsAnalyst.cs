@@ -44,9 +44,10 @@ public static partial class Templates
                 .WithAdvisor()
                 .WithAgentsMd()
                 // .WithKubernetesToolsReadOnly()
-                .WithFunction(new CommandTool("aws").AsFunction())
-                .WithFunction(new CommandTool("gcx").AsFunction())
-                .WithFunction(new CommandTool("kubectl").AsFunction())
+                .WithKubernetesContextProvider()
+                .WithFunction(CommandTool.GetReadonlyAws().AsFunction())
+                .WithFunction(CommandTool.GetReadonlyGcx().AsFunction())
+                .WithFunction(CommandTool.GetReadonlyKubectl().AsFunction())
                 .WithSkills();
     }
 }

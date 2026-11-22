@@ -32,7 +32,10 @@ public enum WritingMode
 public class TerminalDispatcher(IHostApplicationLifetime applicationLifetime)
 {
 
-    private readonly Channel<UIUpdate> _updates = Channel.CreateUnbounded<UIUpdate>();
+    private readonly Channel<UIUpdate> _updates = Channel.CreateUnbounded<UIUpdate>(new()
+    {
+        SingleReader = true
+    });
     public ChannelWriter<UIUpdate> Updates => _updates.Writer;
 
     private WritingMode _currentMode = WritingMode.Assistant;
@@ -42,7 +45,7 @@ public class TerminalDispatcher(IHostApplicationLifetime applicationLifetime)
         var figlet = new FigletText("Reeve");
         AnsiConsole.Write(figlet);
 
-        await foreach (var update in _updates.Reader.ReadAllAsync(applicationLifetime.ApplicationStopping))
+        await foreach (var update in _updates.Reader.ReadAllAsync(applicationLifetime.ApplicationStopping).ConfigureAwait(false))
         {
             CheckMode(update);
 

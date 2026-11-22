@@ -17,6 +17,7 @@ public static class ServiceExtensions
         {
             services
                 .AddSingleton<IStateChangeReceiver, Herdr>()
+                .AddSingleton<IStateChangeReceiver, Osc7501>()
                 .AddSingleton<IToolGateEnforcer, ToolGateEnforcer>()
 
                 .AddCodingAgent()

@@ -13,14 +13,14 @@ Option<bool> themeInfoOption = new("--theme-info")
 RootCommand rootCommand = new("Sarsoo Agent");
 rootCommand.Options.Add(themeInfoOption);
 
-// rootCommand.SetAction(async (pr, ct) =>
-// {
-//     await InitTui.CommandAction(args, themeInfoOption, pr, ct);
-// });
-
 rootCommand.SetAction(async (pr, ct) =>
 {
-    await InitInline.CommandAction(args, pr, ct);
+    await InitTui.CommandAction(args, themeInfoOption, pr, ct);
 });
+
+// rootCommand.SetAction(async (pr, ct) =>
+// {
+//     await InitInline.CommandAction(args, pr, ct);
+// });
 
 return await rootCommand.Parse(args).InvokeAsync();

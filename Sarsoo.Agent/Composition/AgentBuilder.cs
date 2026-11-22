@@ -115,6 +115,20 @@ public class AgentBuilder
         return this;
     }
 
+    public AgentBuilder WithContextProvider(Func<IServiceProvider, AIContextProvider> func)
+    {
+        if (_serviceProvider is not null)
+        {
+            _contextProviders.Add(func(_serviceProvider));
+        }
+        else
+        {
+            throw new InvalidOperationException("No service provider given to resolve function");
+        }
+
+        return this;
+    }
+
     public AgentBuilder WithAgentsMd()
     {
         _contextProviders.Add(new AgentsMdProvider(_loggerFactory?.CreateLogger<AgentsMdProvider>()));

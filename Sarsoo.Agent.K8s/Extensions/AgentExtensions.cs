@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Sarsoo.Agent.Composition;
+using Sarsoo.Agent.K8s.Context;
 
 namespace Sarsoo.Agent.K8s.Extensions;
 
@@ -16,6 +17,13 @@ public static class AgentExtensions
                 .WithFunction(sp => sp.GetRequiredService<Tool>().GetPodsFunction())
                 .WithFunction(sp => sp.GetRequiredService<Tool>().GetPodFunction());
             
+            return builder;
+        }
+
+        public AgentBuilder WithKubernetesContextProvider()
+        {
+            builder.WithContextProvider(sp => sp.GetRequiredService<K8sClusterContextProvider>());
+
             return builder;
         }
     }

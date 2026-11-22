@@ -17,7 +17,7 @@ public class InlineService(
     {
         try
         {
-            await dispatcher.StartUIThread();
+            await dispatcher.StartUIThread().ConfigureAwait(false);
         }
         catch (Exception e)
         {

@@ -8,7 +8,9 @@ public static class ExeResolution
     /// <param name="exe"></param>
     /// <returns></returns>
     /// <exception cref="FileNotFoundException"></exception>
-    public static string FindExePath(string exe)
+    public static string FindExePath(string exe) => TryFindExePath(exe) ?? throw new FileNotFoundException(exe);
+
+    public static string? TryFindExePath(string exe)
     {
         exe = Environment.ExpandEnvironmentVariables(exe);
         if (!File.Exists(exe))
@@ -22,7 +24,8 @@ public static class ExeResolution
                         return Path.GetFullPath(path);
                 }
             }
-            throw new FileNotFoundException(new FileNotFoundException().Message, exe);
+
+            return null;
         }
         return Path.GetFullPath(exe);
     }
