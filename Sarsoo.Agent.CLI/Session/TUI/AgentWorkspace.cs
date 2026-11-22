@@ -92,7 +92,25 @@ public sealed class AgentWorkspace : IAsyncDisposable
         {
             _logger.LogThreadWarning(_app);
             using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(LaunchConfigured)}");
-            foreach (var definition in _options.Value.Startup)
+
+            List<AgentDefinition> definitions;
+            if (_options.Value.Startup.Any())
+            {
+                definitions = _options.Value.Startup;
+            }
+            else
+            {
+                definitions =
+                [
+                    new()
+                    {
+                        Name = "devops analyst",
+                        Profile = "devops-analyst"
+                    }
+                ];
+            }
+
+            foreach (var definition in definitions)
             {
                 if (string.IsNullOrWhiteSpace(definition.Name))
                 {

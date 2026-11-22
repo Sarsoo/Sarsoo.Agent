@@ -23,6 +23,11 @@ public class TuiService(
     
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.CompletedTask;
+        }
+
         _appThread = new Thread(StartTui)
         {
             Name = "UI",
@@ -31,6 +36,11 @@ public class TuiService(
         };
 
         logger.LogInformation("Starting TUI Thread");
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            return Task.CompletedTask;
+        }
         _appThread.Start();
         
         return Task.CompletedTask;
