@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="Sarsoo.Agent.AWS/Sarsoo.Agent.AWS.csproj" />
   <Project Path="Sarsoo.Agent.CLI\Sarsoo.Agent.CLI.csproj" />
   <Project Path="Sarsoo.Agent.DevOps/Sarsoo.Agent.DevOps.csproj" />
   <Project Path="Sarsoo.Agent.K8s/Sarsoo.Agent.K8s.csproj" />

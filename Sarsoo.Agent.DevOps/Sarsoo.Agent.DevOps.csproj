@@ -23,6 +23,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Sarsoo.Agent.AWS\Sarsoo.Agent.AWS.csproj" />
       <ProjectReference Include="..\Sarsoo.Agent.K8s\Sarsoo.Agent.K8s.csproj" />
     </ItemGroup>
 

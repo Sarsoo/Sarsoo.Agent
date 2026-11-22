@@ -1,6 +1,7 @@
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Sarsoo.Agent.AWS.Extensions;
 using Sarsoo.Agent.Composition;
 using Sarsoo.Agent.K8s.Extensions;
 using Sarsoo.Agent.Session;
@@ -45,6 +46,7 @@ public static partial class Templates
                 .WithAgentsMd()
                 // .WithKubernetesToolsReadOnly()
                 .WithKubernetesContextProvider()
+                .WithAwsContextProvider()
                 .WithFunction(CommandTool.GetReadonlyAws().AsFunction())
                 .WithFunction(CommandTool.GetReadonlyGcx().AsFunction())
                 .WithFunction(CommandTool.GetReadonlyKubectl().AsFunction())

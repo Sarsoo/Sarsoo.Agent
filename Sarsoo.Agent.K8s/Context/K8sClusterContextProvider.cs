@@ -39,10 +39,25 @@ public class K8sClusterContextProvider : AIContextProvider
                     _config = await KubernetesClientConfiguration.LoadKubeConfigAsync();
 
                     instructionBuilder.AppendLine("This machine has the following Kubernetes contexts configured:");
+
+                    instructionBuilder.AppendLine("<available_kubernetes_clusters>");
                     foreach (var context in _config.Contexts)
                     {
-                        instructionBuilder.Append("- ").Append(context.Name).Append(" (cluster: ").Append(context.ContextDetails.Cluster).AppendLine(")");
+                        if (_config.CurrentContext.Equals(context.Name))
+                        {
+                            instructionBuilder.AppendLine("  <context current=\"true\">");
+                        }
+                        else
+                        {
+                            instructionBuilder.AppendLine("  <context>");
+                        }
+                        instructionBuilder.Append    ("    <name>").Append(context.Name).AppendLine("</name>");
+                        instructionBuilder.AppendLine("    <cluster>");
+                        instructionBuilder.Append    ("      <name>").Append(context.ContextDetails.Cluster).AppendLine("</name>");
+                        instructionBuilder.AppendLine("    </cluster>");
+                        instructionBuilder.AppendLine("  </context>");
                     }
+                    instructionBuilder.AppendLine("</available_kubernetes_clusters>");
                 }
                 catch (Exception e)
                 {
