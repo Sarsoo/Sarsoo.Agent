@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sarsoo.Agent.Advisor;
 using Sarsoo.Agent.Client;
 using Sarsoo.Agent.Composition;
+using Sarsoo.Agent.Context.Hindsight;
 using Sarsoo.Agent.Gate;
 using Sarsoo.Agent.Integrations;
 using Sarsoo.Agent.Options;
@@ -37,6 +38,22 @@ public static class ServiceExtensions
             else
             {
                 services.AddSingleton<IClientResolver, OpenAIClientResolver>();
+            }
+
+            return services;
+        }
+
+        public IServiceCollection AddHindsight(IConfiguration configuration)
+        {
+            var config = configuration.GetSection(HindsightOptions.Key).Get<HindsightOptions>();
+
+            if (config is not null)
+            {
+                services.Configure<HindsightOptions>(configuration.GetSection(HindsightOptions.Key));
+                services.AddHttpClient(HindsightClient.HindsightHTTPClientName);
+
+                services.AddTransient<HindsightClient>()
+                    .AddTransient<HindsightContextProvider>();
             }
 
             return services;
