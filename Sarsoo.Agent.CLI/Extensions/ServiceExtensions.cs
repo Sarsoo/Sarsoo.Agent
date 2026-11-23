@@ -47,8 +47,8 @@ public static class ServiceExtensions
         public IServiceCollection AddInlineUi()
         {
             serviceCollection.AddHostedService<InlineService>()
-                .AddSingleton<TerminalDispatcher>()
-                .AddHostedService<TestInjection>();
+                .AddSingleton<TerminalDispatcher>();
+                // .AddHostedService<TestInjection>();
 
             return serviceCollection;
         }

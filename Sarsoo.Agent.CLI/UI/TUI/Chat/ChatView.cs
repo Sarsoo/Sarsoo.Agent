@@ -1,4 +1,6 @@
+using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.CLI.Session.TUI;
+using Sarsoo.Agent.Composition;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.ViewBase;
 
@@ -8,7 +10,7 @@ public class ChatView: View
 {
     private readonly ChatTextField _textField;
 
-    public ChatView(AgentWorkspace workspace, ChatTextField textField)
+    public ChatView(AgentWorkspace workspace, IAgentFactory factory, ChatTextField textField, ILoggerFactory loggerFactory)
     {
         CanFocus = true;
         _textField = textField;
@@ -38,7 +40,13 @@ public class ChatView: View
         textField.Height = 5;
         textField.Y = Pos.AnchorEnd();
 
+        // var agentView = factory.CreateAgentView(loggerFactory,
+        //     "devops-analyst", "devops-analyst");
+        //
+        // _ = agentView.Runner.RunAsync();
+
         Add(tabs, textField);
+        // Add(agentView, textField);
     }
 
     public void FocusText()

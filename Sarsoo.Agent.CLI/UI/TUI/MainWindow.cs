@@ -38,15 +38,18 @@ public class MainWindow: Window
         };
 
         chat.Height = Dim.Fill();
-        chat.Width = Dim.Percent(80);
-        statsSide.Height = Dim.Fill();
-        statsSide.Width = Dim.Fill();
+        // chat.Width = Dim.Percent(80);
+        chat.Width = Dim.Fill();
+        // statsSide.Height = Dim.Fill();
+        // statsSide.Width = Dim.Fill();
         
-        statsSide.X = Pos.Right(chat);
+        // statsSide.X = Pos.Right(chat);
         
-        container.Add(chat, statsSide);
+        // container.Add(chat, statsSide);
+        container.Add(chat);
+
         Add(menu, container, appStatus);
-        
+
         _chat.FocusText();
     }
 }

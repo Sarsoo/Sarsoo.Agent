@@ -15,6 +15,12 @@ public class AppStatusBar: StatusBar
         Text = "Idle",
         CanFocus = false,
     };
+    private readonly SpinnerView _spinner = new()
+    {
+        Style = new SpinnerStyle.Dots2(),
+        AutoSpin = true,
+        Visible = false,
+    };
 
     private AgentSessionRunner? _subscribed;
 
@@ -27,7 +33,8 @@ public class AppStatusBar: StatusBar
 
         SchemeName = "StatusBarIdle";
         
-        Add(_agentState);
+        Add(_agentState, _spinner);
+        // Add(_agentState);
 
         _workspace.ActiveChanged += OnActiveChanged;
         OnActiveChanged(this, _workspace.Active);
@@ -82,6 +89,13 @@ public class AppStatusBar: StatusBar
             AgentState.Busy => "Working...",
             AgentState.Blocked => "Blocked",
             AgentState.Idle or _ => "Idle",
+        };
+
+        _spinner.Visible = e switch
+        {
+            AgentState.Blocked or AgentState.Idle => false,
+            AgentState.Busy => true,
+            _ => false
         };
         
         SetNeedsDraw();

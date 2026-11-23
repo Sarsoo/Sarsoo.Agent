@@ -1,5 +1,4 @@
 using System.Diagnostics.Metrics;
-using System.Drawing;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -7,10 +6,13 @@ using Sarsoo.Agent.CLI.Extensions;
 using Sarsoo.Agent.CLI.Observability;
 using Sarsoo.Agent.CLI.UI.TUI.Chat.Message.Agent;
 using Sarsoo.Agent.Extensions;
+using Spectre.Console;
 using Terminal.Gui.App;
 using Terminal.Gui.Input;
+using Terminal.Gui.Interop.Spectre;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
+using Size = System.Drawing.Size;
 
 namespace Sarsoo.Agent.CLI.UI.TUI.Chat.Message;
 
@@ -38,6 +40,8 @@ public class MessageView: View
     private bool _stickToBottom = true;
 
     private IApplication? _mouseHookedApp;
+
+    private readonly View _bannerView;
     
     public MessageView(ILogger<MessageView> logger)
     {
@@ -84,6 +88,20 @@ public class MessageView: View
                              _mouseHookedApp = null;
                          }
                      };
+
+        _bannerView = new View();
+        _bannerView.Width = Dim.Fill();
+        _bannerView.Height = Dim.Auto();
+
+        var bannerLogo = new SpectreView();
+        bannerLogo.Renderable = new FigletText("reeve")
+            .LayoutMode(FigletLayoutMode.Smushed)
+            .Color(Color.Violet);
+        bannerLogo.Width = Dim.Fill();
+        bannerLogo.Height = Dim.Auto();
+
+        _bannerView.Add(bannerLogo);
+        Add(_bannerView);
     }
 
     private bool ScrollBy (int rows)
@@ -282,11 +300,11 @@ public class MessageView: View
         
         if (_messages.LastOrDefault() is { } last)
         {
-            message.Y = Pos.Bottom(last);
+            message.Y = Pos.Bottom(last) + 1;
         }
         else
         {
-            message.Y = Pos.Absolute(0);
+            message.Y = Pos.Bottom(_bannerView) + 1;
         }
 
         message.ContentChanged += OnMessageContentChanged;

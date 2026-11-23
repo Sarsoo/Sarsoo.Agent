@@ -166,19 +166,10 @@ public sealed class AgentWorkspace : IAsyncDisposable
     {
         _logger.LogThreadWarning(_app);
         using var trace = CliTracing.Source.StartActivity($"{nameof(AgentWorkspace)}::{nameof(BuildTab)}");
-        var session = _factory.CreateSession(
-            profile, 
-            name, 
-            model: model,
-            thinkingLevel: thinkingLevel,
-            configureOptions: configureOptions,
-            systemPrompt: systemPrompt
+        var tab = _factory.CreateAgentView(_loggerFactory,
+            profile, name, model,
+            thinkingLevel, configureOptions, systemPrompt
         );
-        var runner = _factory.CreateRunner(session);
-        var messages = new MessageView(_loggerFactory.CreateLogger<MessageView>());
-        var stats = new TokenSessionStats(session);
-
-        var tab = new AgentTab(runner, messages, stats, _tabLogger);
         _tabsByName.Add(name, tab);
 
         void AddTab()
@@ -199,7 +190,7 @@ public sealed class AgentWorkspace : IAsyncDisposable
         }
 
         _logger.LogThreadWarning(_app);
-        _ = runner.RunAsync();
+        _ = tab.Runner.RunAsync();
 
         _logger.LogInformation("Created agent {agent} from profile {profile}", name, profile);
 

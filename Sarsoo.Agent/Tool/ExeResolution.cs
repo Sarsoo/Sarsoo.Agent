@@ -9,6 +9,7 @@ public static class ExeResolution
     /// <returns></returns>
     /// <exception cref="FileNotFoundException"></exception>
     public static string FindExePath(string exe) => TryFindExePath(exe) ?? throw new FileNotFoundException(exe);
+    public static bool ExeOnPath(string exe) => TryFindExePath(exe) is not null;
 
     public static string? TryFindExePath(string exe)
     {

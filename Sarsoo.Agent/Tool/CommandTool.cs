@@ -6,54 +6,56 @@ using Sarsoo.Agent.Tool.Policy;
 
 namespace Sarsoo.Agent.Tool;
 
-public partial class CommandTool
+public partial class CommandTool(string command, ICommandPolicy? policy = null, string? descriptionAddition = null)
 {
-    private readonly string _command;
-    private readonly ICommandPolicy? _policy;
-
-    public CommandTool(string command, ICommandPolicy? policy = null)
-    {
-        _command = command;
-        _policy = policy;
-    }
-
-    public async Task<string> Run(List<string> argv)
+    public async Task<string> Run(List<string> argv, int timeoutSeconds = 10)
     {
         try
         {
-            if (_policy is not null)
+            if (policy is not null)
             {
-                var policyResult = _policy.IsPermitted(argv);
+                var policyResult = policy.IsPermitted(argv);
                 if (!policyResult.Permitted)
                 {
                     if (!string.IsNullOrWhiteSpace(policyResult.Reason))
                     {
                         return
-                            $"{_command} cannot be run with those arguments, blocked by policy: {policyResult.Reason}";
+                            $"{command} cannot be run with those arguments, blocked by policy: {policyResult.Reason}";
                     }
 
-                    return $"{_command} cannot be run with those arguments, blocked by policy";
+                    return $"{command} cannot be run with those arguments, blocked by policy";
                 }
             }
 
-            var wrapped = await Cli.Wrap(_command)
+            using var cts = new CancellationTokenSource();
+            cts.CancelAfter(TimeSpan.FromSeconds(timeoutSeconds));
+
+            var wrapped = await Cli.Wrap(command)
                 .WithArguments(argv)
                 .WithValidation(CommandResultValidation.None)
-                .ExecuteBufferedAsync();
+                .ExecuteBufferedAsync(cts.Token);
 
             return $@"
 <command>
-<output>
-<standard-output>
+  <output>
+    <standard-output>
 {wrapped.StandardOutput}
-</standard-output>
-<standard-error>
+    </standard-output>
+    <standard-error>
 {wrapped.StandardError}
-</standard-error>
-</output>
+    </standard-error>
+  </output>
 
-<exit-code>{wrapped.ExitCode}</exit-code>
-<execution-time>{wrapped.RunTime}</execution-time>
+  <exit-code>{wrapped.ExitCode}</exit-code>
+  <execution-time>{wrapped.RunTime}</execution-time>
+</command>
+";
+        }
+        catch (OperationCanceledException e)
+        {
+            return $@"
+<command>
+  <error>Tool timed-out during execution (timeout set to {timeoutSeconds}s)</error>
 </command>
 ";
         }
@@ -61,12 +63,10 @@ public partial class CommandTool
         {
             return $@"
 <command>
-<error>
-Tool failed to execute
-</error>
-<exception>
+  <error>Tool failed to execute</error>
+  <exception>
 {e.Message}
-</exception>
+  </exception>
 </command>
 ";
         }
@@ -76,6 +76,13 @@ Tool failed to execute
     {
         var options = new JsonSerializerOptions(AIJsonUtilities.DefaultOptions);
         options.TypeInfoResolverChain.Insert(0, ToolJsonContext.Default);
-        return AIFunctionFactory.Create(Run, name: _command, description: $"Run a single {_command} command (no shell) with arbitrary arguments", options);
+
+        var description = $"Run a single {command} command (no shell) with arbitrary arguments";
+        if (!string.IsNullOrEmpty(descriptionAddition))
+        {
+            description += $", {descriptionAddition}";
+        }
+
+        return AIFunctionFactory.Create(Run, name: command, description: description, options);
     }
 }

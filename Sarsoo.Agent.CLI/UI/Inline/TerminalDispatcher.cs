@@ -6,13 +6,14 @@ namespace Sarsoo.Agent.CLI.UI.Inline;
 
 public record struct AssistantTextUpdate(string Text);
 public record struct AssistantReasoningUpdate(string Text);
-public record struct AssistantStopUpdate();
+public record struct AgentStateUpdate();
 public record struct UserMessageUpdate(string Text);
 
 public union UIUpdate(
     AssistantTextUpdate,
     AssistantReasoningUpdate,
-    UserMessageUpdate
+    UserMessageUpdate,
+    AgentStateUpdate
 )
 {
     public WritingMode GetWritingMode() => this switch
@@ -20,13 +21,14 @@ public union UIUpdate(
         AssistantReasoningUpdate => WritingMode.Reasoning,
         AssistantTextUpdate => WritingMode.Assistant,
         UserMessageUpdate => WritingMode.User,
+        AgentStateUpdate => WritingMode.None,
         _ => throw new ArgumentOutOfRangeException()
     };
 }
 
 public enum WritingMode
 {
-    Assistant, User, Reasoning, Tool
+    Assistant, User, Reasoning, Tool, None
 }
 
 public class TerminalDispatcher(IHostApplicationLifetime applicationLifetime)
@@ -60,8 +62,8 @@ public class TerminalDispatcher(IHostApplicationLifetime applicationLifetime)
                 case UserMessageUpdate userMessage:
                     WriteUser(userMessage.Text);
                     break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(update));
+                // default:
+                    // throw new ArgumentOutOfRangeException(nameof(update));
             }
         }
 
@@ -88,6 +90,7 @@ public class TerminalDispatcher(IHostApplicationLifetime applicationLifetime)
             WritingMode.User => "",
             WritingMode.Reasoning => "",
             WritingMode.Tool => "",
+            WritingMode.None => "",
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         });
 

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.AWS.Extensions;
 using Sarsoo.Agent.Composition;
+using Sarsoo.Agent.Extensions;
 using Sarsoo.Agent.K8s.Extensions;
 using Sarsoo.Agent.Session;
 using Sarsoo.Agent.Tool;
@@ -44,12 +45,10 @@ public static partial class Templates
                                   """)
                 .WithAdvisor()
                 .WithAgentsMd()
-                // .WithKubernetesToolsReadOnly()
-                .WithKubernetesContextProvider()
-                .WithAwsContextProvider()
-                .WithFunction(CommandTool.GetReadonlyAws().AsFunction())
+                .TryWithReadOnlyAwsCommandTool()
+                .TryWithReadOnlyKubectlCommandTool()
+                .TryWithCommandTool("dig")
                 .WithFunction(CommandTool.GetReadonlyGcx().AsFunction())
-                .WithFunction(CommandTool.GetReadonlyKubectl().AsFunction())
                 .WithSkills();
     }
 }

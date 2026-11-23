@@ -14,43 +14,106 @@ namespace Sarsoo.Agent.CLI.Session.Inline;
 /// </summary>
 public sealed class AgentTab : IAsyncDisposable
 {
-    // private readonly MessageView _messages;
     private readonly TerminalDispatcher _dispatcher;
     private readonly ILogger<AgentTab> _logger;
     private bool _runnerDisposed;
-    private bool _viewDisposed;
 
     public AgentTab(AgentSessionRunner runner, TerminalDispatcher dispatcher, ILogger<AgentTab> logger)
     {
         Runner = runner;
         Session = runner.Session;
-        // Stats = stats;
-        // _messages = messages;
         _dispatcher = dispatcher;
         _logger = logger;
 
         runner.UserMessage += OnUserMessage;
         runner.AgentMessage += OnAgentMessage;
+        runner.StateChanged += OnStateChange;
     }
 
     public AgentSessionRunner Runner { get; }
     public AgentSessionContext Session { get; }
-    // public MessageView Messages => _messages;
-    // public TokenSessionStats Stats { get; }
+
+    private void OnStateChange(object? sender, AgentState userMessage)
+    {
+        using var trace = CliTracing.Source.StartActivity($"{nameof(AgentTab)}::{nameof(OnUserMessage)}");
+
+        // _dispatcher.Updates.WriteAsync(new UserMessageUpdate());
+    }
 
     private void OnUserMessage(object? sender, ChatMessage userMessage)
     {
         using var trace = CliTracing.Source.StartActivity($"{nameof(AgentTab)}::{nameof(OnUserMessage)}");
         if (!string.IsNullOrWhiteSpace(userMessage.Text))
         {
-            // _messages.AddMessage(new UserMessage(userMessage));
-            // _messages.SetNeedsDraw();
+            _dispatcher.Updates.WriteAsync(new UserMessageUpdate(userMessage.Text));
         }
     }
 
     private void OnAgentMessage(object? sender, AgentResponseUpdate update)
     {
         using var trace = CliTracing.Source.StartActivity($"{nameof(AgentTab)}::{nameof(OnAgentMessage)}");
+
+        foreach (var content in update.Contents)
+        {
+            switch (content)
+            {
+                case AlwaysApproveToolApprovalResponseContent alwaysApproveToolApprovalResponseContent:
+                    break;
+                case CodeInterpreterToolCallContent codeInterpreterToolCallContent:
+                    break;
+                case CodeInterpreterToolResultContent codeInterpreterToolResultContent:
+                    break;
+                case DataContent dataContent:
+                    break;
+                case ErrorContent errorContent:
+                    break;
+                case FunctionCallContent functionCallContent:
+                    break;
+                case FunctionResultContent functionResultContent:
+                    break;
+                case HostedFileContent hostedFileContent:
+                    break;
+                case HostedVectorStoreContent hostedVectorStoreContent:
+                    break;
+                case ImageGenerationToolCallContent imageGenerationToolCallContent:
+                    break;
+                case ImageGenerationToolResultContent imageGenerationToolResultContent:
+                    break;
+                case ToolApprovalRequestContent toolApprovalRequestContent:
+                    break;
+                case InputRequestContent inputRequestContent:
+                    break;
+                case ToolApprovalResponseContent toolApprovalResponseContent:
+                    break;
+                case InputResponseContent inputResponseContent:
+                    break;
+                case McpServerToolCallContent mcpServerToolCallContent:
+                    break;
+                case McpServerToolResultContent mcpServerToolResultContent:
+                    break;
+                case TextContent textContent:
+                    _dispatcher.Updates.WriteAsync(new AssistantReasoningUpdate(textContent.Text));
+                    break;
+                case TextReasoningContent textReasoningContent:
+                    _dispatcher.Updates.WriteAsync(new AssistantReasoningUpdate(textReasoningContent.ToString()));
+                    break;
+                case WebSearchToolCallContent webSearchToolCallContent:
+                    break;
+                case ToolCallContent toolCallContent:
+                    break;
+                case WebSearchToolResultContent webSearchToolResultContent:
+                    break;
+                case ToolResultContent toolResultContent:
+                    break;
+                case UriContent uriContent:
+                    break;
+                case UsageContent usageContent:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(content));
+            }
+        }
+
         // _messages.AddAgentMessage(update);
         // _messages.SetNeedsDraw();
     }
@@ -78,11 +141,5 @@ public sealed class AgentTab : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await DisposeRunnerAsync().ConfigureAwait(false);
-
-        if (!_viewDisposed)
-        {
-            _viewDisposed = true;
-            // Dispose();
-        }
     }
 }
