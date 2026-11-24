@@ -1,7 +1,9 @@
 using System.Text;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Sarsoo.Agent.Observability;
+using Sarsoo.Agent.Options;
 
 namespace Sarsoo.Agent.Context.Hindsight;
 
@@ -32,11 +34,17 @@ public class HindsightContextProvider: AIContextProvider
     }
 
     private readonly ProviderSessionState<HindsightState> _sessionState;
+    private readonly IOptions<HindsightOptions> _hindsightConfig;
     private readonly HindsightClient _hindsightClient;
     private readonly ILogger<HindsightContextProvider>? _logger;
 
-    public HindsightContextProvider(HindsightClient hindsightClient, ILogger<HindsightContextProvider>? logger = null)
+    public HindsightContextProvider(
+        IOptions<HindsightOptions> hindsightConfig,
+        HindsightClient hindsightClient,
+        ILogger<HindsightContextProvider>? logger = null
+    )
     {
+        _hindsightConfig = hindsightConfig;
         _hindsightClient = hindsightClient;
         _logger = logger;
         _sessionState = new ProviderSessionState<HindsightState>(

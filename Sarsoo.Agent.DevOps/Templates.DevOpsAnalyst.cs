@@ -45,9 +45,11 @@ public static partial class Templates
                                   """)
                 .WithAdvisor()
                 .WithAgentsMd()
+                .WithCodeMode()
                 .TryWithReadOnlyAwsCommandTool()
                 .TryWithReadOnlyKubectlCommandTool()
                 .TryWithCommandTool("dig")
+                .TryWithCommandTool("traceroute")
                 .WithFunction(CommandTool.GetReadonlyGcx().AsFunction())
                 .WithSkills();
     }

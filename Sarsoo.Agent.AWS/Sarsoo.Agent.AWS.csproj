@@ -17,6 +17,11 @@
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(Configuration)'=='Release'" >
+        <DebugSymbols>False</DebugSymbols>
+        <DebugType>None</DebugType>
+    </PropertyGroup>
+
     <ItemGroup>
       <ProjectReference Include="..\Sarsoo.Agent\Sarsoo.Agent.csproj" />
     </ItemGroup>

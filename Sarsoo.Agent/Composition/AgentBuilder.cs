@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.Agents.AI;
+using Microsoft.Agents.AI.LocalCodeAct;
 using Microsoft.Agents.AI.Tools.Shell;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Sarsoo.Agent.Advisor;
 using Sarsoo.Agent.Context;
 using Sarsoo.Agent.Session;
+using Sarsoo.Agent.Tool;
+
 #pragma warning disable MAAI001
 
 namespace Sarsoo.Agent.Composition;
@@ -20,11 +23,13 @@ public class AgentBuilder
     
     private readonly List<string> _systemPrompts = new();
     private readonly List<AIContextProvider> _contextProviders = new();
-    private readonly List<AITool> _tools = new();
+    private readonly List<AIFunction> _tools = new();
     private readonly List<Func<ToolAutoApprovalRuleContext, ValueTask<bool>>> _autoApprovalRules = new();
 
     private AgentFileStore? _fileStore = null;
     private FileAccessProviderOptions? _fileAccessOptions = null;
+
+    private LocalCodeActProvider? _codeMode = null;
 
     private string? _name = null;
     private string? _id = null;
@@ -106,6 +111,20 @@ public class AgentBuilder
     public AgentBuilder WithSystemPrompt(string prompt)
     {
         _systemPrompts.Add(prompt);
+        return this;
+    }
+
+    public AgentBuilder WithCodeMode(LocalCodeActProviderOptions? options = null)
+    {
+        var py = ExeResolution.TryFindExePath("python");
+        var py3 = ExeResolution.TryFindExePath("python3");
+
+        if ((py3 ?? py) is {} path)
+        {
+            _codeMode = new LocalCodeActProvider(path, options);
+            WithContextProvider(_codeMode);
+        }
+
         return this;
     }
 
@@ -265,6 +284,14 @@ public class AgentBuilder
                 Output = _reasoningFormat
             };
         }
+
+        if (_codeMode is not null && _tools.Any())
+        {
+            foreach (var tool in _tools)
+            {
+                _codeMode.AddTools(tool);
+            }
+        }
         
         return _client.AsHarnessAgent(options: new()
             {
@@ -276,7 +303,7 @@ public class AgentBuilder
                 OpenTelemetrySourceName = "Sarsoo.Agent.Harness",
                 ChatOptions = new()
                 {
-                    Tools = _tools.Any() ? _tools : null,
+                    Tools = _tools.Any() ? _tools.Cast<AITool>().ToList() : null,
                     ModelId = _modelId,
                     ConversationId = _conversationId,
                     AllowMultipleToolCalls = _multipleToolCalls,
